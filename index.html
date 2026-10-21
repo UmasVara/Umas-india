@@ -1,5 +1,74 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Umas.India</title><style>body{margin:0;font-family:system-ui;background:#fff} .header{background:#e91e63;color:#fff;text-align:center;padding:18px 12px} .header h1{margin:0;font-size:28px;cursor:pointer;user-select:none} .header p{margin:6px 0 0;font-size:13px;line-height:1.4} #secretAdminBtn{display:none;background:#000;color:#fff;border:none;padding:8px 22px;border-radius:20px;margin-top:10px;font-weight:bold} .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px} .card{border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.12)} .card img{width:100%;height:200px;object-fit:cover} .card-body{padding:10px} .buy{background:#e91e63;color:#fff;border:none;width:100%;padding:10px;border-radius:8px;font-weight:bold;margin-top:6px}</style></head><body><div class="header"><h1 id="mainTitle">Umas.India</h1><p>Owner: Umasvara | 7989333257<br>UPI: 7989333257@ybl</p><button id="secretAdminBtn" onclick="checkAdmin()">Admin</button></div><div id="products" class="grid"></div><script>
-// LOAD PRODUCTS FROM LOCAL STORAGE (same as your old site)
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Umas.India</title>
+<style>
+body{margin:0;font-family:system-ui;background:#fff}
+.header{background:#e91e63;color:#fff;text-align:center;padding:18px 12px;position:sticky;top:0;z-index:10}
+.header h1{margin:0;font-size:28px;cursor:pointer;user-select:none}
+.header p{margin:6px 0 0;font-size:13px;line-height:1.4}
+#secretAdminBtn{display:none;background:#000;color:#fff;border:none;padding:8px 22px;border-radius:20px;margin-top:10px;font-weight:bold}
+#cartBtn{position:fixed;bottom:20px;right:20px;background:#e91e63;color:#fff;border:none;padding:15px 20px;border-radius:50px;font-weight:bold;box-shadow:0 4px 15px rgba(0,0,0,.3);z-index:20}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px;padding-bottom:80px}
+.card{border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.12);background:#fff}
+.card img{width:100%;height:200px;object-fit:cover}
+.card-body{padding:10px}
+.buy{background:#e91e63;color:#fff;border:none;width:100%;padding:10px;border-radius:8px;font-weight:bold;margin-top:6px;cursor:pointer}
+#checkoutModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:30;overflow-y:auto}
+.modalBox{background:#fff;max-width:450px;margin:20px auto;padding:20px;border-radius:15px}
+.modalBox input, .modalBox textarea{width:92%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:8px}
+.payOption{display:block;padding:12px;margin:8px 0;border-radius:10px;border:2px solid #ddd;cursor:pointer}
+.payOption:has(input:checked){border-color:#e91e63;background:#fce4ec}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1 id="mainTitle">Umas.India</h1>
+<p>Owner: Umasvara | 7989333257<br>UPI: 7989333257@ybl</p>
+<button id="secretAdminBtn" onclick="checkAdmin()">Admin</button>
+</div>
+
+<div id="products" class="grid"></div>
+
+<button id="cartBtn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
+
+<!-- CHECKOUT MODAL - FOR BUYERS WITH COD/UPI/WHATSAPP -->
+<div id="checkoutModal">
+<div class="modalBox">
+<h2 style="margin-top:0;color:#e91e63;">Checkout - Choose Payment</h2>
+<button onclick="closeCheckout()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X Close</button>
+<div style="clear:both"></div>
+
+<div id="cartItems"></div>
+<h3>Total: ₹<span id="totalAmt">0</span></h3>
+
+<input id="custName" placeholder="Your Full Name *">
+<input id="custPhone" placeholder="Phone Number *">
+<textarea id="custAddress" placeholder="Full Delivery Address *"></textarea>
+
+<h3>💳 Select Payment Method</h3>
+<label class="payOption" style="background:#e8f5e9;">
+<input type="radio" name="pay" value="cod" checked> <b>🚚 Cash on Delivery</b><br><small>Pay cash when delivery boy comes - Most Popular</small>
+</label>
+
+<label class="payOption" style="background:#e3f2fd;">
+<input type="radio" name="pay" value="upi"> <b>📱 UPI Payment</b><br><small>GPay / PhonePe / Paytm to 7989333257@ybl</small>
+</label>
+
+<label class="payOption" style="background:#fff3e0;">
+<input type="radio" name="pay" value="whatsapp"> <b>💬 Order on WhatsApp</b><br><small>Chat with owner: 7989333257</small>
+</label>
+
+<button onclick="placeOrder()" style="width:100%;background:#e91e63;color:#fff;padding:16px;border:none;border-radius:10px;font-size:18px;font-weight:bold;margin-top:15px;">✅ Place My Order</button>
+
+</div>
+</div>
+
+<script>
+// PRODUCTS
 let products=JSON.parse(localStorage.getItem('umas_products')||'[]');
 if(products.length===0){
 products=[
@@ -7,14 +76,87 @@ products=[
 {name:"Mens cotton shirt",price:108,mrp:200,cat:"Menswear",img:"https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500"}
 ];
 }
+let cart=JSON.parse(localStorage.getItem('umas_cart')||'[]');
+
 function render(){
 let html='';
-products.forEach(p=>{
-html+=`<div class="card"><img src="${p.img}"><div class="card-body"><b>${p.name}</b><br>₹${p.price} <s>₹${p.mrp}</s><br><small>${p.cat}</small><br><button class="buy" onclick="buy('${p.name}')">Buy on WhatsApp</button></div></div>`;
+products.forEach((p,i)=>{
+html+=`<div class="card"><img src="${p.img}"><div class="card-body"><b>${p.name}</b><br>₹${p.price} <s>₹${p.mrp}</s><br><small>${p.cat}</small><br><button class="buy" onclick="addToCart(${i})">Add to Cart</button></div></div>`;
 });
 document.getElementById('products').innerHTML=html;
+updateCartCount();
 }
-function buy(name){window.open(`https://wa.me/917989333257?text=I want to buy ${name} from Umas.India`);}
+
+function addToCart(index){
+let p=products[index];
+let existing=cart.find(c=>c.name===p.name);
+if(existing) existing.qty++;
+else cart.push({...p,qty:1});
+localStorage.setItem('umas_cart',JSON.stringify(cart));
+updateCartCount();
+alert(p.name+" Added to Cart!");
+}
+
+function updateCartCount(){
+let count=cart.reduce((s,c)=>s+c.qty,0);
+document.getElementById('cartCount').innerText=count;
+}
+
+function openCheckout(){
+if(cart.length===0){ alert("Cart is empty! Add products first"); return; }
+let html='';
+let total=0;
+cart.forEach(c=>{
+let t=c.price*c.qty;
+total+=t;
+html+=`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:8px 0;"><span>${c.name} x${c.qty}</span><span>₹${t}</span></div>`;
+});
+document.getElementById('cartItems').innerHTML=html;
+document.getElementById('totalAmt').innerText=total;
+document.getElementById('checkoutModal').style.display='block';
+}
+
+function closeCheckout(){
+document.getElementById('checkoutModal').style.display='none';
+}
+
+function placeOrder(){
+const method=document.querySelector('input[name="pay"]:checked').value;
+const name=document.getElementById('custName').value;
+const phone=document.getElementById('custPhone').value;
+const address=document.getElementById('custAddress').value;
+if(!name||!phone||!address){ alert("Please fill Name, Phone, Address"); return; }
+
+let total=cart.reduce((s,c)=>s+c.price*c.qty,0);
+const UPI_ID="7989333257@ybl";
+const WA_NUMBER="917989333257";
+
+// Save order locally + try Firebase if exists
+let orders=JSON.parse(localStorage.getItem('umas_orders')||'[]');
+orders.push({items:cart,total,method,customer:{name,phone,address},date:new Date().toLocaleString()});
+localStorage.setItem('umas_orders',JSON.stringify(orders));
+
+if(method==='cod'){
+alert("✅ COD Order Placed!\nName: "+name+"\nTotal: Rs."+total+"\nWe will call you: "+phone+"\nPay cash on delivery!");
+cart=[]; localStorage.setItem('umas_cart',JSON.stringify(cart));
+closeCheckout(); render();
+}
+else if(method==='upi'){
+let upiLink=`upi://pay?pa=${UPI_ID}&pn=Umas.India&am=${total}&cu=INR&tn=Order ${name}`;
+window.location.href=upiLink;
+setTimeout(()=>{
+alert("UPI Payment:\nPay Rs."+total+" to:\n"+UPI_ID+"\n\nAfter payment, send screenshot to WhatsApp: 7989333257");
+},1500);
+}
+else if(method==='whatsapp'){
+let msg=`*New Order - Umas.India*%0A%0A`;
+cart.forEach(c=>{msg+=`${c.name} x${c.qty} - Rs.${c.price*c.qty}%0A`;});
+msg+=`%0ATotal: Rs.${total}%0AName: ${name}%0APhone: ${phone}%0AAddress: ${address}%0APayment: WhatsApp`;
+window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, '_blank');
+alert("Order sent to WhatsApp!");
+}
+}
+
 render();
 
 // SECRET TAP LOGIC - Tap title 3 times
@@ -33,4 +175,6 @@ let p=prompt("Enter Admin Password:");
 if(p==="Business@1008"){window.location.href="admin.html";}
 else if(p!==null){alert("Wrong Password!");document.getElementById('secretAdminBtn').style.display='none';}
 }
-</script></body></html>
+</script>
+</body>
+</html>
