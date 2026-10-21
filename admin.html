@@ -16,13 +16,29 @@ let items=(o.items||[]).map(i=>`${i.name} x${i.qty}`).join(', ');
 let st=o.status||o.method||'pending';
 let addr=o.customer?.address||'No address';
 let name=o.customer?.name||'';let phone=o.customer?.phone||'';
+// Delivery date logic - if old order has no delivery date, calculate +4 days from order date
+let estDelivery = o.estimatedDelivery || '';
+let estDay = o.estimatedDeliveryDay || '';
+if(!estDelivery && o.date){
+  try{
+    let od = o.date.toDate ? o.date.toDate() : new Date(d);
+    let dd = new Date(od); dd.setDate(dd.getDate()+4);
+    estDelivery = dd.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    estDay = dd.toLocaleDateString('en-IN',{weekday:'long'});
+  }catch(e){ estDelivery='4 Days from order'; }
+}
+let deliveryText = estDelivery ? `${estDay}, ${estDelivery}` : '4 Days from order';
+
 h+=`<div class=card>
 <b>${name} - ${phone}</b> <span class="status s-${st.toLowerCase()}">${st.toUpperCase()}</span><br>
 ${items}<br><b>₹${o.total}</b><br>
 <div style="background:#fff3cd;padding:6px;border-radius:6px;margin:6px 0;">📍 ${addr}</div>
-<small>${d}</small><br>
+<div style="background:#e8f5e9;padding:8px;border-radius:6px;margin:6px 0;text-align:center;border:1px dashed #4caf50;">
+🚚 <b>Expected Delivery:</b><br><span style="font-size:16px;color:#2e7d32;">${deliveryText}</span>
+</div>
+<small>Ordered: ${d}</small><br>
 <label>Update Status:</label>
-<select onchange="updateStatus('${id}','${phone}','${name}','${o.total}',this.value)" style="background:#e3f2fd;font-weight:bold">
+<select onchange="updateStatus('${id}','${phone}','${name}','${o.total}','${deliveryText}',this.value)" style="background:#e3f2fd;font-weight:bold">
 <option value="">-- Change Status --</option>
 <option value="Pending">Pending</option>
 <option value="Packed">Packed</option>
@@ -39,13 +55,13 @@ ${items}<br><b>₹${o.total}</b><br>
 oc.innerText=count;od.innerHTML=h||"No orders";
 });
 }
-function updateStatus(orderId,phone,name,total,newStatus){
+function updateStatus(orderId,phone,name,total,deliveryDate,newStatus){
 if(!newStatus)return;
-if(!confirm(`Change order to ${newStatus}? Buyer will be notified via WhatsApp?`))return;
-db.collection("orders").doc(orderId).update({status:newStatus}).then(()=>{
-let msg=`*Umas.India - Order Update*%0A%0AHi ${name},%0AYour order of Rs.${total} is now: *${newStatus}*%0A%0A${newStatus=='Shipped'?'🚚 Your order is out for delivery!':newStatus=='Delivered'?'✅ Delivered! Thank you!':newStatus=='Packed'?'📦 Packed and ready!':''}%0A%0AThank you for shopping with Umas.India!%0ACall: 7989333257`;
+if(!confirm(`Change order to ${newStatus}?`))return;
+db.collection("orders").doc(orderId).update({status:newStatus, estimatedDelivery: deliveryDate}).then(()=>{
+let msg=`*Umas.India - Order Update*%0A%0AHi ${name},%0A%0A📦 Order: Rs.${total}%0AStatus: *${newStatus.toUpperCase()}*%0A%0A🚚 *Expected Delivery: ${deliveryDate}*%0A%0A${newStatus=='Pending'?'✅ Your order is CONFIRMED! We will pack it soon.':newStatus=='Packed'?'📦 PACKED! Your order is ready for shipment.':newStatus=='Shipped'?'🚚 OUT FOR DELIVERY! Your order will reach today/tomorrow! Please keep cash ready.':newStatus=='Delivered'?'✅ DELIVERED! Thank you for shopping with Umas.India ❤️ Please share your feedback!':'❌ Cancelled as per your request.'}%0A%0ATrack here: https://umasvara.github.io/Umas-india/%0ACall: 7989333257`;
 window.open(`https://wa.me/91${phone.replace(/\D/g,'').slice(-10)}?text=${msg}`,'_blank');
-alert(`Status changed to ${newStatus} and WhatsApp opened to notify buyer!`);
+alert(`Status changed to ${newStatus}\nDelivery: ${deliveryDate}\nWhatsApp opened!`);
 });
 }
 </script></body></html>
