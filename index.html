@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Umas.India</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+body{background:#f5f5f5}
+.header{background:#e91e63;color:#fff;text-align:center;padding:18px}
+.products{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
+.card{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.card img{width:100%;height:200px;object-fit:cover}
+.card-body{padding:8px}
+.btn{width:100%;background:#e91e63;color:#fff;border:0;padding:9px;border-radius:6px;margin-top:6px;font-weight:bold}
+.track{background:#fff;margin:10px;padding:15px;border-radius:12px}
+.track input{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
+.track button{width:100%;padding:12px;background:#e91e63;color:#fff;border:0;border-radius:8px;margin-top:8px;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>Umas.India</h1>
+<p>Owner: Umaswara | 7989333257<br>UPI: 7989333257@ybl</p>
+<a href="#trackBox"><button style="background:#fff;color:#e91e63;border:0;padding:8px 15px;border-radius:20px;margin-top:8px">📦 Track My Order</button></a>
+</div>
+
+<div class="products">
+  <div class="card">
+    <img src="https://images.pexels.com/photos/7679720/pexels-photo-7679720.jpeg?auto=compress&cs=tinysrgb&w=400">
+    <div class="card-body">
+      <b>Kanchi Blue Saree</b>
+      <div style="margin-top:4px;font-weight:bold">₹100 <s style="color:#999;font-size:12px">₹108</s></div>
+      <button class="btn">Add to Cart</button>
+    </div>
+  </div>
+  <div class="card">
+    <img src="https://images.pexels.com/photos/9558246/pexels-photo-9558246.jpeg?auto=compress&cs=tinysrgb&w=400">
+    <div class="card-body">
+      <b>Kanchi Green Saree</b>
+      <div style="margin-top:4px;font-weight:bold">₹120 <s style="color:#999;font-size:12px">₹150</s></div>
+      <button class="btn">Add to Cart</button>
+    </div>
+  </div>
+</div>
+
+<div id="trackBox" class="track">
+<h3>📦 Track My Order</h3>
+<input id="phone" placeholder="90******11">
+<button onclick="alert('No orders for '+document.getElementById('phone').value)">Track Now</button>
+</div>
+
+<center style="padding:20px"><a href="admin.html" style="color:#e91e63">Admin</a></center>
+
+<script>
+// FORCE CLEAR OLD BROKEN MEMORY
+localStorage.removeItem('umas_products');
+localStorage.removeItem('umas_products_v2');
+localStorage.removeItem('umas_products_v1');
+</script>
+</body>
+</html>
