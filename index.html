@@ -1,111 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Umas.India</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#e91e63">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3081/3081840.png">
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Umas.India - Fashion Store</title>
 <style>
-body{margin:0;font-family:system-ui;background:#fff}
-.header{background:#e91e63;color:#fff;text-align:center;padding:18px 12px;position:sticky;top:0;z-index:10}
-.header h1{margin:0;font-size:28px;cursor:pointer;user-select:none}
-.header p{margin:6px 0 0;font-size:13px;line-height:1.4}
-#secretAdminBtn{display:none;background:#000;color:#fff;border:none;padding:8px 22px;border-radius:20px;margin-top:10px;font-weight:bold}
-#cartBtn{position:fixed;bottom:20px;right:20px;background:#e91e63;color:#fff;border:none;padding:15px 20px;border-radius:50px;font-weight:bold;box-shadow:0 4px 15px rgba(0,0,0,.3);z-index:20}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px;padding-bottom:80px}
-.card{border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.12);background:#fff}
-.card img{width:100%;height:200px;object-fit:cover}
-.card-body{padding:10px}
-.buy{background:#e91e63;color:#fff;border:none;width:100%;padding:10px;border-radius:8px;font-weight:bold;margin-top:6px;cursor:pointer}
-#checkoutModal,#trackModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:30;overflow-y:auto}
-.modalBox{background:#fff;max-width:450px;margin:20px auto;padding:20px;border-radius:15px}
-.modalBox input, .modalBox textarea{width:92%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:8px}
-.payOption{display:block;padding:12px;margin:8px 0;border-radius:10px;border:2px solid #ddd;cursor:pointer}
-.payOption:has(input:checked){border-color:#e91e63;background:#fce4ec}
-.qtyBtn{border:1px solid #ccc;background:#fff;padding:2px 8px;border-radius:4px;cursor:pointer;font-weight:bold}
-.removeBtn{background:#ff1744;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px}
-.trackBtn{background:#fff;color:#e91e63;border:none;padding:7px 16px;border-radius:20px;font-weight:bold;margin-top:10px;cursor:pointer}
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto}
+body{background:#f5f5f7;color:#111}
+header{background:#131921;color:#fff;padding:12px 15px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:20px;letter-spacing:0.5px;cursor:pointer;user-select:none}
+header .cart-icon{position:relative;cursor:pointer;font-size:22px}
+#cartCount{position:absolute;top:-8px;right:-10px;background:#febd69;color:#000;font-size:12px;padding:2px 6px;border-radius:50%;font-weight:bold}
+.search-bar{background:#fff;padding:10px;display:flex;gap:8px;position:sticky;top:48px;z-index:99}
+.search-bar input{flex:1;padding:10px 12px;border:1px solid #ccc;border-radius:8px;outline:none}
+.products{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
+.product{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.1);cursor:pointer}
+.product img{width:100%;height:180px;object-fit:cover}
+.product-info{padding:8px}
+.product-info h3{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.price{color:#B12704;font-weight:700;margin-top:4px}
+.oldprice{font-size:12px;color:#888;text-decoration:line-through;margin-left:5px}
+.track-section{background:#fff;margin:10px;padding:15px;border-radius:10px}
+.track-section input{width:100%;padding:10px;margin:8px 0;border:1px solid #ccc;border-radius:8px}
+.track-section button{width:100%;padding:10px;background:#ffd814;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
+#productModal{position:fixed;inset:0;background:#fff;z-index:1000;display:none;overflow-y:auto}
+.modal-top{position:sticky;top:0;background:#fff;z-index:10;display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee}
+.close-btn{font-size:22px;background:#eee;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;cursor:pointer}
+.slider-wrap{position:relative;background:#fff;overflow:hidden}
+.slides{display:flex;transition:transform 0.3s ease;touch-action:pan-y}
+.slide{min-width:100%;height:380px;display:grid;place-items:center;background:#fafafa}
+.slide img{max-width:100%;max-height:100%;object-fit:contain}
+.slide iframe{width:100%;height:100%;border:none}
+.slider-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.8);border:1px solid #ddd;width:36px;height:60px;cursor:pointer;font-size:20px;border-radius:6px}
+.prev{left:8px} .next{right:8px}
+.dots{display:flex;justify-content:center;gap:6px;padding:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:#ccc}
+.dot.active{background:#ff9900;width:18px;border-radius:10px}
+.detail-body{padding:12px}
+.badge{background:#CC0C39;color:#fff;font-size:12px;padding:2px 6px;border-radius:3px}
+.highlights{background:#f8f8f8;padding:10px;border-radius:8px;margin:10px 0}
+.highlights li{font-size:14px;margin:6px 0 6px 18px}
+.action-bar{position:sticky;bottom:0;background:#fff;padding:10px;border-top:1px solid #eee;display:flex;gap:10px}
+.btn-add{flex:1;background:#ffd814;border:none;padding:12px;border-radius:20px;font-weight:bold;cursor:pointer}
+.btn-buy{flex:1;background:#ffa41c;border:none;padding:12px;border-radius:20px;font-weight:bold;cursor:pointer}
+.cart-drawer{position:fixed;top:0;right:-100%;width:85%;max-width:400px;height:100%;background:#fff;z-index:1100;transition:0.3s;overflow:auto;box-shadow:-2px 0 10px rgba(0,0,0,0.2)}
+.cart-drawer.open{right:0}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;z-index:1050}
+.overlay.show{display:block}
 </style>
 </head>
 <body>
-<div class="header">
+<header>
 <h1 id="mainTitle">Umas.India</h1>
-<p>Owner: Umasvara | 7989333257<br>UPI: 7989333257@ybl</p>
-<button class="trackBtn" onclick="openTrack()">📦 Track My Order</button>
-<button id="secretAdminBtn" onclick="checkAdmin()">Admin</button>
+<div style="display:flex;gap:15px;align-items:center">
+<span id="adminSecret" style="display:none;background:#febd69;color:#000;padding:4px 8px;border-radius:5px;font-size:12px;cursor:pointer" onclick="location.href='admin.html'">ADMIN</span>
+<div class="cart-icon" onclick="openCart()">🛒<span id="cartCount">0</span></div>
 </div>
-<div id="products" class="grid"></div>
-<button id="cartBtn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
-<div id="checkoutModal"><div class="modalBox">
-<h2 style="margin-top:0;color:#e91e63;">Checkout</h2>
-<button onclick="closeCheckout()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X</button>
-<div style="clear:both"></div>
-<div id="cartItems"></div>
-<h3>Total: ₹<span id="totalAmt">0</span></h3>
-<input id="custName" placeholder="Your Full Name *">
-<input id="custPhone" placeholder="Phone Number *">
-<textarea id="custAddress" placeholder="Full Delivery Address *"></textarea>
-<h3>💳 Payment</h3>
-<label class="payOption" style="background:#e8f5e9;"><input type="radio" name="pay" value="cod" checked> <b>🚚 COD - Delivery in 4 Days</b></label>
-<label class="payOption" style="background:#e3f2fd;"><input type="radio" name="pay" value="upi"> <b>📱 UPI - 7989333257@ybl</b></label>
-<label class="payOption" style="background:#fff3e0;"><input type="radio" name="pay" value="whatsapp"> <b>💬 WhatsApp Order</b></label>
-<button onclick="placeOrder()" style="width:100%;background:#e91e63;color:#fff;padding:16px;border:none;border-radius:10px;font-size:18px;font-weight:bold;margin-top:15px;">✅ Place My Order</button>
-</div></div>
-<div id="trackModal"><div class="modalBox">
-<h2 style="color:#e91e63;margin-top:0;">📦 Track Your Orders</h2>
-<button onclick="closeTrack()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X</button>
-<div style="clear:both"></div>
-<input id="trackPhone" placeholder="Enter Phone e.g. 90******11">
-<button onclick="trackOrders()" style="width:100%;background:#4caf50;color:#fff;padding:12px;border:none;border-radius:8px;font-weight:bold;margin-top:8px;">🔍 Check Status</button>
-<div id="trackResult" style="margin-top:15px;"></div>
-</div></div>
+</header>
+<div class="search-bar"><input id="search" placeholder="Search Sarees, Kurtis..." oninput="renderProducts()"></div>
+<div id="products" class="products"></div>
+<div class="track-section">
+<h3>📦 Track My Order</h3>
+<input type="tel" id="trackPhone" placeholder="Enter Phone e.g. 90******11">
+<button onclick="trackOrder()">Track Now</button>
+<div id="trackResult" style="margin-top:10px"></div>
+</div>
+<div id="productModal">
+<div class="modal-top"><span style="font-weight:bold">Product Details</span><div class="close-btn" onclick="closeProduct()">✕</div></div>
+<div class="slider-wrap">
+<div class="slides" id="slides"></div>
+<button class="slider-btn prev" onclick="moveSlide(-1)">‹</button>
+<button class="slider-btn next" onclick="moveSlide(1)">›</button>
+</div>
+<div class="dots" id="dots"></div>
+<div class="detail-body">
+<span class="badge">Great Indian Festival</span>
+<h2 id="dTitle" style="margin:8px 0;font-size:18px"></h2>
+<div><span id="dPrice" class="price" style="font-size:22px"></span><span id="dOld" class="oldprice"></span> <span style="color:#067D62;font-size:14px"> Inclusive</span></div>
+<div style="margin:8px 0">⭐ <span id="dRating"></span> | 11 mins delivery</div>
+<div class="highlights"><b>HIGHLIGHTS</b><ul id="dHighlights"></ul></div>
+<div style="margin:12px 0"><b>Product Description</b><p id="dDesc" style="font-size:14px;margin-top:6px;line-height:1.5;color:#333"></p></div>
+<div style="background:#f5f5f5;padding:10px;border-radius:8px;font-size:13px"><b>Return:</b> 10 Days Replacement<br><b>Seller:</b> Umas.India<br><b>Delivery:</b> 4 Days - COD Available</div>
+<div style="height:80px"></div>
+</div>
+<div class="action-bar">
+<button class="btn-add" onclick="addToCartFromDetail()">Add to Cart</button>
+<button class="btn-buy" onclick="buyNow()">Buy Now</button>
+</div>
+</div>
+<div class="overlay" id="overlay" onclick="closeCart();closeProduct()"></div>
+<div class="cart-drawer" id="cartDrawer">
+<div style="padding:15px;display:flex;justify-content:space-between;border-bottom:1px solid #eee"><b>Your Cart</b><span style="cursor:pointer" onclick="closeCart()">✕</span></div>
+<div id="cartItems" style="padding:10px"></div>
+<div style="padding:15px;border-top:1px solid #eee">
+<input id="custName" placeholder="Full Name" style="width:100%;padding:10px;margin:5px 0;border:1px solid #ccc;border-radius:8px">
+<input id="custPhone" type="tel" placeholder="Phone e.g. 90******11" style="width:100%;padding:10px;margin:5px 0;border:1px solid #ccc;border-radius:8px">
+<input id="custAddr" placeholder="Full Address" style="width:100%;padding:10px;margin:5px 0;border:1px solid #ccc;border-radius:8px">
+<button onclick="placeOrder()" style="width:100%;padding:12px;background:#ffa41c;border:none;border-radius:8px;font-weight:bold;margin-top:10px">Place Order - COD</button>
+</div>
+</div>
 <script>
-const firebaseConfig={apiKey:"AIzaSyA2CKqJnhdVijyCmrJPrxP21fVhIQI9LWk",authDomain:"umasindia-4cd69.firebaseapp.com",projectId:"umasindia-4cd69",storageBucket:"umasindia-4cd69.firebasestorage.app",messagingSenderId:"441625672930",appId:"1:441625672930:web:0e80f6a292950d6dbd72bb"};
-firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore();
-let products=[];let cart=JSON.parse(localStorage.getItem('umas_cart')||'[]');
-function loadProducts(){db.collection("products").orderBy("date","desc").onSnapshot(s=>{products=[];s.forEach(doc=>{products.push({...doc.data(), id:doc.id})});render();});}
-function render(){let html='';products.forEach((p,i)=>{html+=`<div class="card"><img src="${p.image||p.img}"><div class="card-body"><b>${p.name}</b><br>₹${p.price} <s>₹${p.mrp||''}</s><br><small>${p.category||''}</small><br><button class="buy" onclick="addToCart(${i})">Add to Cart</button></div></div>`;});document.getElementById('products').innerHTML=html;updateCartCount();}
-function addToCart(i){let p=products[i];let e=cart.find(c=>c.name===p.name);if(e)e.qty++;else cart.push({name:p.name,price:p.price,qty:1});localStorage.setItem('umas_cart',JSON.stringify(cart));updateCartCount();alert(p.name+" Added!");}
-function updateCartCount(){document.getElementById('cartCount').innerText=cart.reduce((s,c)=>s+c.qty,0);}
-function openCheckout(){if(cart.length===0){alert("Cart empty");return;}renderCheckoutItems();document.getElementById('checkoutModal').style.display='block';}
-function renderCheckoutItems(){let html='';let total=0;cart.forEach((c,idx)=>{let t=c.price*c.qty;total+=t;html+=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;"><div><b>${c.name}</b><br><button class="qtyBtn" onclick="changeQty(${idx},-1)">-</button> ${c.qty} <button class="qtyBtn" onclick="changeQty(${idx},1)">+</button> ₹${t}</div><button class="removeBtn" onclick="removeItem(${idx})">Remove</button></div>`;});document.getElementById('cartItems').innerHTML=html;document.getElementById('totalAmt').innerText=total;}
-function changeQty(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);saveCart();}
-function removeItem(i){cart.splice(i,1);saveCart();}
-function saveCart(){localStorage.setItem('umas_cart',JSON.stringify(cart));if(cart.length===0){closeCheckout();render();return;}renderCheckoutItems();updateCartCount();}
-function closeCheckout(){document.getElementById('checkoutModal').style.display='none';}
-function placeOrder(){
-const method=document.querySelector('input[name="pay"]:checked').value;
-const name=document.getElementById('custName').value.trim();
-const phone=document.getElementById('custPhone').value.trim();
-const address=document.getElementById('custAddress').value.trim();
-if(!name||!phone||!address){alert("Fill all fields");return;}
-let total=cart.reduce((s,c)=>s+c.price*c.qty,0);
-let deliveryDate = new Date(); deliveryDate.setDate(deliveryDate.getDate()+4);
-let deliveryDateStr = deliveryDate.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-let deliveryDay = deliveryDate.toLocaleDateString('en-IN',{weekday:'long'});
-const orderData={items:cart,total:total,method:method,customer:{name:name,phone:phone,address:address},status:"Pending",estimatedDelivery:deliveryDateStr,estimatedDeliveryDay:deliveryDay,date:firebase.firestore.FieldValue.serverTimestamp(),localDate:new Date().toLocaleString()};
-db.collection("orders").add(orderData).then(()=>{alert("✅ Order Placed!\n🚚 Delivery by: "+deliveryDay+", "+deliveryDateStr);cart=[];localStorage.setItem('umas_cart',JSON.stringify(cart));closeCheckout();render();});
+let tap=0; document.getElementById('mainTitle').addEventListener('click',()=>{tap++; if(tap>=3){document.getElementById('adminSecret').style.display='block';} setTimeout(()=>tap=0,2000);});
+let products = JSON.parse(localStorage.getItem('umas_products') || 'null') || [
+{id:1,name:"Pigeon Joy 400W Electric Rice Cooker - White",price:1261,oldPrice:2995,rating:"3.9 (1,412)",images:["https://m.media-amazon.com/images/I/61vR+0lG5rL._SL1000_.jpg","https://m.media-amazon.com/images/I/71k+3nY8sLL._SL1000_.jpg"],video:"https://www.youtube.com/embed/dQw4w9WgXcQ",highlights:["Pigeon by Stovekraft Joy Rice Cooker with Single pot","White | 400 Watts | Aluminium Cooking Pot","Energy Efficient Cooking","Toughened Glass Lid"],desc:"Pigeon Rice Cooker with Single pot, 1 Litres (White) 400 Watts Aluminium Cooking Pot | Measuring Cup | Spatula | Energy Efficient Cooking."},
+{id:2,name:"Banarasi Silk Saree - Festive Red",price:1499,oldPrice:2999,rating:"4.5 (890)",images:["https://images.unsplash.com/photo-1610030469983-98e550d6193a?w=600","https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600"],video:"",highlights:["Pure Banarasi Silk","Festive Wear","Blouse Included"],desc:"Beautiful Banarasi Silk Saree perfect for festivals and weddings."}
+];
+localStorage.setItem('umas_products',JSON.stringify(products));
+let cart=JSON.parse(localStorage.getItem('umas_cart')||'[]');
+let currentProduct=null,currentSlide=0,touchStartX=0;
+function renderProducts(){
+ const q=document.getElementById('search').value.toLowerCase();
+ const list=products.filter(p=>p.name.toLowerCase().includes(q));
+ document.getElementById('products').innerHTML=list.map(p=>`
+  <div class="product" onclick="openProduct(${p.id})">
+    <img src="${p.images[0]}"><div class="product-info"><h3>${p.name}</h3><div><span class="price">₹${p.price}</span><span class="oldprice">₹${p.oldPrice}</span></div><div style="font-size:12px">⭐ ${p.rating}</div></div>
+  </div>`).join(''); updateCartCount();
 }
-function openTrack(){document.getElementById('trackModal').style.display='block';}
-function closeTrack(){document.getElementById('trackModal').style.display='none';}
-function trackOrders(){
-let phone=document.getElementById('trackPhone').value.trim();if(!phone){alert("Enter phone");return;}
-document.getElementById('trackResult').innerHTML="Searching...";
-db.collection("orders").where("customer.phone","==",phone).get().then(s=>{
-if(s.empty){document.getElementById('trackResult').innerHTML=`<div style="background:#f8d7da;padding:12px;border-radius:8px;">No orders for ${phone}</div>`;return;}
-let h="";s.forEach(doc=>{
-let o=doc.data();let status=o.status||"Pending";let steps=["Pending","Packed","Shipped","Delivered"];let currentIndex=steps.indexOf(status);if(currentIndex==-1)currentIndex=0;
-let progress=`<div style="display:flex;justify-content:space-between;margin:12px 0;">`;steps.forEach((st,i)=>{
-let active=i<=currentIndex?"background:#e91e63;color:#fff;border:2px solid #e91e63;":"background:#eee;color:#888;border:2px solid #ddd;";let icon=i<=currentIndex?"✓":"○";
-progress+=`<div style="text-align:center;flex:1;"><div style="${active}width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:14px;font-weight:bold;">${icon}</div><small style="font-size:10px;display:block;margin-top:4px;font-weight:${i<=currentIndex?'bold':'normal'}">${st}</small></div>`;
-if(i<steps.length-1){let lineColor=i<currentIndex?"#e91e63":"#ddd";progress+=`<div style="flex:1;height:3px;background:${lineColor};margin-top:13px;"></div>`;}
-});progress+=`</div>`;
-let items=(o.items||[]).map(i=>`${i.name} x${i.qty}`).join(', ');let est=o.estimatedDelivery?`${o.estimatedDeliveryDay||''}, ${o.estimatedDelivery}`:'4-5 Days';
+function openProduct(id){
+ currentProduct=products.find(p=>p.id===id); currentSlide=0;
+ document.getElementById('dTitle').innerText=currentProduct.name;
+ document.getElementById('dPrice').innerText='₹'+currentProduct.price;
+ document.getElementById('dOld').innerText='₹'+currentProduct.oldPrice;
+ document.getElementById('dRating').innerText=currentProduct.rating;
+ document.getElementById('dHighlights').innerHTML=(currentProduct.highlights||[]).map(h=>`<li>${h}</li>`).join('');
+ document.getElementById('dDesc').innerText=currentProduct.desc||'';
+ const slidesEl=document.getElementById('slides');
+ let slidesData=[...currentProduct.images];
+ if(currentProduct.video){ slidesData.push({isVideo:true,url:currentProduct.video}); }
+ slidesEl.innerHTML=slidesData.map(s=>{
+   if(typeof s==='object' && s.isVideo){ 
+     let url=s.url; if(url.includes('youtube.com/watch')) url=url.replace('watch?v=','embed/'); if(url.includes('youtu.be')) url='https://www.youtube.com/embed/'+url.split('/').pop();
+     return `<div class="slide"><iframe src="${url}" allowfullscreen></iframe></div>` 
+   } else { return `<div class="slide"><img src="${s}"></div>` }
+ }).join('');
+ document.getElementById('dots').innerHTML=slidesData.map((_,i)=>`<div class="dot ${i===0?'active':''}"></div>`).join('');
+ document.getElementById('productModal').style.display='block';
+ document.getElementById('overlay').classList.add('show');
+ updateSlider();
+ slidesEl.addEventListener('touchstart',e=>touchStartX=e.touches[0].clientX,{passive:true});
+ slidesEl.addEventListener('touchend',e=>{let dx=e.changedTouches[0].clientX-touchStartX; if(dx<-40) moveSlide(1); if(dx>40) moveSlide(-1);},{passive:true});
+}
+function updateSlider(){ document.getElementById('slides').style.transform=`translateX(-${currentSlide*100}%)`; document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===currentSlide)); }
+function moveSlide(dir){ const total=document.getElementById('slides').children.length; currentSlide=(currentSlide+dir+total)%total; updateSlider(); }
+function closeProduct(){document.getElementById('productModal').style.display='none';document.getElementById('overlay').classList.remove('show');}
+function addToCartFromDetail(){ if(currentProduct){ addToCart(currentProduct.id); closeProduct(); openCart(); } }
+function addToCart(id){ let p=products.find(x=>x.id===id); let f=cart.find(x=>x.id===id); if(f) f.qty++; else cart.push({...p,qty:1}); localStorage.setItem('umas_cart',JSON.stringify(cart)); updateCartCount(); renderCart(); }
+function updateCartCount(){ document.getElementById('cartCount').innerText=cart.reduce((a,b)=>a+b.qty,0); }
+function openCart(){document.getElementById('cartDrawer').classList.add('open');document.getElementById('overlay').classList.add('show');renderCart();}
+function closeCart(){document.getElementById('cartDrawer').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
+function renderCart(){ document.getElementById('cartItems').innerHTML=cart.length?cart.map((c,i)=>`<div style="display:flex;gap:10px;margin:8px 0;border-bottom:1px solid #eee;padding-bottom:8px"><img src="${c.images[0]}" style="width:60px;height:60px;object-fit:cover"><div style="flex:1"><div style="font-size:14px">${c.name}</div><div style="font-weight:bold">₹${c.price} x ${c.qty}</div></div><span style="cursor:pointer" onclick="removeCart(${i})">🗑️</span></div>`).join('')+`<b>Total: ₹${cart.reduce((a,b)=>a+b.price*b.qty,0)}</b>`:'Cart empty'; }
+function removeCart(i){cart.splice(i,1);localStorage.setItem('umas_cart',JSON.stringify(cart));updateCartCount();renderCart();}
+function buyNow(){openCart();}
+function maskPhone(p){ if(!p||p.length<4) return p; return p.substring(0,2)+'******'+p.substring(p.length-2); }
+function placeOrder(){ let name=document.getElementById('custName').value, phone=document.getElementById('custPhone').value, addr=document.getElementById('custAddr').value; if(!name||!phone||!addr) return alert('Fill all details'); if(cart.length===0) return alert('Cart empty'); let orders=JSON.parse(localStorage.getItem('umas_orders')||'[]'); let order={id:Date.now(),name,phone,addr,items:cart,total:cart.reduce((a,b)=>a+b.price*b.qty,0),date:new Date().toLocaleDateString(),delivery:new Date(Date.now()+4*24*60*60*1000).toLocaleDateString()}; orders.push(order); localStorage.setItem('umas_orders',JSON.stringify(orders)); cart=[]; localStorage.setItem('umas_cart','[]'); updateCartCount(); closeCart(); alert('Order Placed! Delivery by '+order.delivery+'\\nTrack: '+maskPhone(phone)); }
+function trackOrder(){ let phone=document.getElementById('trackPhone').value.trim(); if(!phone) return alert('Enter phone'); let orders=JSON.parse(localStorage.getItem('umas_orders')||'[]'); let filtered=orders.filter(o=>o.phone===phone || o.phone.includes(phone)); let res=document.getElementById('trackResult'); if(filtered.length===0) res.innerHTML='<p style="color:red">No orders found for '+maskPhone(phone)+'</p>'; else res.innerHTML=filtered.reverse().map(o=>`<div style="border:1px solid #ddd;padding:10px;border-radius:8px;margin:6px 0"><b>Order #${o.id}</b><br>Total: ₹${o.total}<br>Delivery: ${o.delivery}<br>Status: Ordered → Packed → Shipped</div>`).join(''); }
+renderProducts();
+</script>
+</body>
+</html>dDeliveryDay||''}, ${o.estimatedDelivery}`:'4-5 Days';
 h+=`<div style="background:#fff;padding:14px;border-radius:12px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,.12);border-left:5px solid #e91e63;">${progress}<b>${items}</b><br>₹${o.total} - <b style="color:#e91e63;">${status}</b><br><div style="background:#e8f5e9;padding:10px;border-radius:8px;margin:10px 0;text-align:center;border:1px dashed #4caf50;">🚚 <b>Delivery by</b><br><span style="font-size:18px;color:#2e7d32;font-weight:bold;">${est}</span><br><small>${o.localDate||''}</small></div></div>`;
 });document.getElementById('trackResult').innerHTML=h;
 });
