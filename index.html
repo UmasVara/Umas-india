@@ -21,6 +21,8 @@ body{margin:0;font-family:system-ui;background:#fff}
 .modalBox input, .modalBox textarea{width:92%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:8px}
 .payOption{display:block;padding:12px;margin:8px 0;border-radius:10px;border:2px solid #ddd;cursor:pointer}
 .payOption:has(input:checked){border-color:#e91e63;background:#fce4ec}
+.qtyBtn{border:1px solid #ccc;background:#fff;padding:2px 8px;border-radius:4px;cursor:pointer;font-weight:bold}
+.removeBtn{background:#ff1744;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px}
 </style>
 </head>
 <body>
@@ -35,7 +37,6 @@ body{margin:0;font-family:system-ui;background:#fff}
 
 <button id="cartBtn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
 
-<!-- CHECKOUT MODAL - FOR BUYERS WITH COD/UPI/WHATSAPP -->
 <div id="checkoutModal">
 <div class="modalBox">
 <h2 style="margin-top:0;color:#e91e63;">Checkout - Choose Payment</h2>
@@ -68,7 +69,6 @@ body{margin:0;font-family:system-ui;background:#fff}
 </div>
 
 <script>
-// PRODUCTS
 let products=JSON.parse(localStorage.getItem('umas_products')||'[]');
 if(products.length===0){
 products=[
@@ -104,16 +104,42 @@ document.getElementById('cartCount').innerText=count;
 
 function openCheckout(){
 if(cart.length===0){ alert("Cart is empty! Add products first"); return; }
+renderCheckoutItems();
+document.getElementById('checkoutModal').style.display='block';
+}
+
+function renderCheckoutItems(){
 let html='';
 let total=0;
-cart.forEach(c=>{
+cart.forEach((c,idx)=>{
 let t=c.price*c.qty;
 total+=t;
-html+=`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:8px 0;"><span>${c.name} x${c.qty}</span><span>₹${t}</span></div>`;
+html+=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;">
+<div><b>${c.name}</b><br><button class="qtyBtn" onclick="changeQty(${idx},-1)">-</button> <span style="margin:0 6px;">${c.qty}</span> <button class="qtyBtn" onclick="changeQty(${idx},1)">+</button> <span style="margin-left:8px;">₹${t}</span></div>
+<button class="removeBtn" onclick="removeItem(${idx})">Remove</button>
+</div>`;
 });
 document.getElementById('cartItems').innerHTML=html;
 document.getElementById('totalAmt').innerText=total;
-document.getElementById('checkoutModal').style.display='block';
+}
+
+function changeQty(index,delta){
+cart[index].qty+=delta;
+if(cart[index].qty<=0){
+cart.splice(index,1);
+}
+localStorage.setItem('umas_cart',JSON.stringify(cart));
+if(cart.length===0){closeCheckout(); render(); return;}
+renderCheckoutItems();
+updateCartCount();
+}
+
+function removeItem(index){
+cart.splice(index,1);
+localStorage.setItem('umas_cart',JSON.stringify(cart));
+if(cart.length===0){closeCheckout(); render(); return;}
+renderCheckoutItems();
+updateCartCount();
 }
 
 function closeCheckout(){
@@ -122,44 +148,52 @@ document.getElementById('checkoutModal').style.display='none';
 
 function placeOrder(){
 const method=document.querySelector('input[name="pay"]:checked').value;
-const name=document.getElementById('custName').value;
-const phone=document.getElementById('custPhone').value;
-const address=document.getElementById('custAddress').value;
+const name=document.getElementById('custName').value.trim();
+const phone=document.getElementById('custPhone').value.trim();
+const address=document.getElementById('custAddress').value.trim();
 if(!name||!phone||!address){ alert("Please fill Name, Phone, Address"); return; }
 
 let total=cart.reduce((s,c)=>s+c.price*c.qty,0);
 const UPI_ID="7989333257@ybl";
 const WA_NUMBER="917989333257";
 
-// Save order locally + try Firebase if exists
 let orders=JSON.parse(localStorage.getItem('umas_orders')||'[]');
-orders.push({items:cart,total,method,customer:{name,phone,address},date:new Date().toLocaleString()});
+orders.push({id:Date.now(),items:[...cart],total,method,customer:{name,phone,address},date:new Date().toLocaleString()});
 localStorage.setItem('umas_orders',JSON.stringify(orders));
 
 if(method==='cod'){
-alert("✅ COD Order Placed!\nName: "+name+"\nTotal: Rs."+total+"\nWe will call you: "+phone+"\nPay cash on delivery!");
-cart=[]; localStorage.setItem('umas_cart',JSON.stringify(cart));
-closeCheckout(); render();
+alert("✅ COD Order Placed!\nName: "+name+"\nTotal: Rs."+total+"\nWe will call you: "+phone);
+finishOrder();
 }
 else if(method==='upi'){
 let upiLink=`upi://pay?pa=${UPI_ID}&pn=Umas.India&am=${total}&cu=INR&tn=Order ${name}`;
 window.location.href=upiLink;
 setTimeout(()=>{
-alert("UPI Payment:\nPay Rs."+total+" to:\n"+UPI_ID+"\n\nAfter payment, send screenshot to WhatsApp: 7989333257");
-},1500);
+alert("UPI: Pay Rs."+total+" to "+UPI_ID+" \nAfter payment send screenshot to 7989333257");
+finishOrder();
+},2000);
 }
 else if(method==='whatsapp'){
 let msg=`*New Order - Umas.India*%0A%0A`;
 cart.forEach(c=>{msg+=`${c.name} x${c.qty} - Rs.${c.price*c.qty}%0A`;});
 msg+=`%0ATotal: Rs.${total}%0AName: ${name}%0APhone: ${phone}%0AAddress: ${address}%0APayment: WhatsApp`;
 window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, '_blank');
-alert("Order sent to WhatsApp!");
+finishOrder();
 }
+}
+
+function finishOrder(){
+cart=[]; 
+localStorage.setItem('umas_cart',JSON.stringify(cart));
+closeCheckout(); 
+render();
+document.getElementById('custName').value='';
+document.getElementById('custPhone').value='';
+document.getElementById('custAddress').value='';
 }
 
 render();
 
-// SECRET TAP LOGIC - Tap title 3 times
 let taps=0;
 document.getElementById('mainTitle').addEventListener('click',function(){
 taps++;
