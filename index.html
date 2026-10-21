@@ -26,24 +26,18 @@ body{margin:0;font-family:system-ui;background:#fff}
 .qtyBtn{border:1px solid #ccc;background:#fff;padding:2px 8px;border-radius:4px;cursor:pointer;font-weight:bold}
 .removeBtn{background:#ff1744;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px}
 .trackBtn{background:#fff;color:#e91e63;border:none;padding:7px 16px;border-radius:20px;font-weight:bold;margin-top:10px;cursor:pointer}
-.statusBadge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:bold}
 </style>
 </head>
 <body>
-
 <div class="header">
 <h1 id="mainTitle">Umas.India</h1>
 <p>Owner: Umasvara | 7989333257<br>UPI: 7989333257@ybl</p>
 <button class="trackBtn" onclick="openTrack()">📦 Track My Order</button>
 <button id="secretAdminBtn" onclick="checkAdmin()">Admin</button>
 </div>
-
 <div id="products" class="grid"></div>
-
 <button id="cartBtn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
-
-<div id="checkoutModal">
-<div class="modalBox">
+<div id="checkoutModal"><div class="modalBox">
 <h2 style="margin-top:0;color:#e91e63;">Checkout</h2>
 <button onclick="closeCheckout()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X</button>
 <div style="clear:both"></div>
@@ -53,83 +47,118 @@ body{margin:0;font-family:system-ui;background:#fff}
 <input id="custPhone" placeholder="Phone Number *">
 <textarea id="custAddress" placeholder="Full Delivery Address *"></textarea>
 <h3>💳 Payment</h3>
-<label class="payOption" style="background:#e8f5e9;"><input type="radio" name="pay" value="cod" checked> <b>🚚 Cash on Delivery</b></label>
+<label class="payOption" style="background:#e8f5e9;"><input type="radio" name="pay" value="cod" checked> <b>🚚 Cash on Delivery - Delivery in 4 Days</b></label>
 <label class="payOption" style="background:#e3f2fd;"><input type="radio" name="pay" value="upi"> <b>📱 UPI - 7989333257@ybl</b></label>
 <label class="payOption" style="background:#fff3e0;"><input type="radio" name="pay" value="whatsapp"> <b>💬 WhatsApp Order</b></label>
 <button onclick="placeOrder()" style="width:100%;background:#e91e63;color:#fff;padding:16px;border:none;border-radius:10px;font-size:18px;font-weight:bold;margin-top:15px;">✅ Place My Order</button>
-</div>
-</div>
-
-<div id="trackModal">
-<div class="modalBox">
+</div></div>
+<div id="trackModal"><div class="modalBox">
 <h2 style="color:#e91e63;margin-top:0;">📦 Track Your Orders</h2>
 <button onclick="closeTrack()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X</button>
 <div style="clear:both"></div>
-<p>Enter phone number used for order:</p>
-<input id="trackPhone" placeholder="Enter Phone Number e.g. 9052878711">
+<p>Enter phone number:</p>
+<input id="trackPhone" placeholder="e.g. 9052878711">
 <button onclick="trackOrders()" style="width:100%;background:#4caf50;color:#fff;padding:12px;border:none;border-radius:8px;font-weight:bold;margin-top:8px;">🔍 Check Status</button>
 <div id="trackResult" style="margin-top:15px;"></div>
-</div>
-</div>
-
+</div></div>
 <script>
 const firebaseConfig={apiKey:"AIzaSyA2CKqJnhdVijyCmrJPrxP21fVhIQI9LWk",authDomain:"umasindia-4cd69.firebaseapp.com",projectId:"umasindia-4cd69",storageBucket:"umasindia-4cd69.firebasestorage.app",messagingSenderId:"441625672930",appId:"1:441625672930:web:0e80f6a292950d6dbd72bb"};
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
-
-let products=[];
-let cart=JSON.parse(localStorage.getItem('umas_cart')||'[]');
-
+let products=[];let cart=JSON.parse(localStorage.getItem('umas_cart')||'[]');
 function loadProducts(){
 db.collection("products").orderBy("date","desc").onSnapshot(s=>{
-products=[];
-s.forEach(doc=>{products.push({...doc.data(), id:doc.id})});
-if(products.length===0){
-products=[
-{name:"Kanchi blue",price:100,mrp:108,category:"Sarees",image:"https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500"},
-{name:"Mens cotton shirt",price:108,mrp:200,category:"Menswear",image:"https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500"}
-];
-}
+products=[];s.forEach(doc=>{products.push({...doc.data(), id:doc.id})});
 render();
-});
-}
+});}
 function render(){
-let html='';
-products.forEach((p,i)=>{
-html+=`<div class="card"><img src="${p.image||p.img}"><div class="card-body"><b>${p.name}</b><br>₹${p.price} <s>₹${p.mrp||''}</s><br><small>${p.category||p.cat||''}</small><br><button class="buy" onclick="addToCart(${i})">Add to Cart</button></div></div>`;
+let html='';products.forEach((p,i)=>{
+html+=`<div class="card"><img src="${p.image||p.img}"><div class="card-body"><b>${p.name}</b><br>₹${p.price} <s>₹${p.mrp||''}</s><br><small>${p.category||''}</small><br><button class="buy" onclick="addToCart(${i})">Add to Cart</button></div></div>`;
 });
-document.getElementById('products').innerHTML=html;
-updateCartCount();
+document.getElementById('products').innerHTML=html;updateCartCount();
 }
-function addToCart(index){
-let p=products[index];
-let existing=cart.find(c=>c.name===p.name);
-if(existing) existing.qty++;
-else cart.push({name:p.name,price:p.price,qty:1,image:p.image||p.img});
-localStorage.setItem('umas_cart',JSON.stringify(cart));
-updateCartCount();
-alert(p.name+" Added!");
-}
+function addToCart(i){let p=products[i];let e=cart.find(c=>c.name===p.name);if(e)e.qty++;else cart.push({name:p.name,price:p.price,qty:1});localStorage.setItem('umas_cart',JSON.stringify(cart));updateCartCount();alert(p.name+" Added!");}
 function updateCartCount(){document.getElementById('cartCount').innerText=cart.reduce((s,c)=>s+c.qty,0);}
 function openCheckout(){if(cart.length===0){alert("Cart empty");return;}renderCheckoutItems();document.getElementById('checkoutModal').style.display='block';}
 function renderCheckoutItems(){
 let html='';let total=0;
-cart.forEach((c,idx)=>{
-let t=c.price*c.qty;total+=t;
+cart.forEach((c,idx)=>{let t=c.price*c.qty;total+=t;
 html+=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;"><div><b>${c.name}</b><br><button class="qtyBtn" onclick="changeQty(${idx},-1)">-</button> ${c.qty} <button class="qtyBtn" onclick="changeQty(${idx},1)">+</button> ₹${t}</div><button class="removeBtn" onclick="removeItem(${idx})">Remove</button></div>`;
 });
-document.getElementById('cartItems').innerHTML=html;
-document.getElementById('totalAmt').innerText=total;
+document.getElementById('cartItems').innerHTML=html;document.getElementById('totalAmt').innerText=total;
 }
 function changeQty(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);saveCart();}
 function removeItem(i){cart.splice(i,1);saveCart();}
 function saveCart(){localStorage.setItem('umas_cart',JSON.stringify(cart));if(cart.length===0){closeCheckout();render();return;}renderCheckoutItems();updateCartCount();}
 function closeCheckout(){document.getElementById('checkoutModal').style.display='none';}
-
 function placeOrder(){
 const method=document.querySelector('input[name="pay"]:checked').value;
 const name=document.getElementById('custName').value.trim();
 const phone=document.getElementById('custPhone').value.trim();
 const address=document.getElementById('custAddress').value.trim();
 if(!name||!phone||!address){alert("Fill all fields");return;}
-let total=cart.reduce((s,c)=>s+c.price*c
+let total=cart.reduce((s,c)=>s+c.price*c.qty,0);
+// Delivery date = +4 days
+let deliveryDate = new Date(); deliveryDate.setDate(deliveryDate.getDate()+4);
+let deliveryDateStr = deliveryDate.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+let deliveryDay = deliveryDate.toLocaleDateString('en-IN',{weekday:'long'});
+const orderData={
+items:cart,total:total,method:method,
+customer:{name:name,phone:phone,address:address},
+status:"Pending",
+estimatedDelivery: deliveryDateStr,
+estimatedDeliveryDay: deliveryDay,
+date: firebase.firestore.FieldValue.serverTimestamp(),
+localDate: new Date().toLocaleString()
+};
+db.collection("orders").add(orderData).then(()=>{
+alert("✅ Order Placed!\n🚚 Delivery by: "+deliveryDay+", "+deliveryDateStr+"\nTotal ₹"+total+"\nTrack with your phone number.");
+cart=[];localStorage.setItem('umas_cart',JSON.stringify(cart));closeCheckout();render();
+document.getElementById('custName').value='';document.getElementById('custPhone').value='';document.getElementById('custAddress').value='';
+});
+}
+function openTrack(){document.getElementById('trackModal').style.display='block';}
+function closeTrack(){document.getElementById('trackModal').style.display='none';}
+function trackOrders(){
+let phone=document.getElementById('trackPhone').value.trim();
+if(!phone){alert("Enter phone");return;}
+document.getElementById('trackResult').innerHTML="Searching...";
+db.collection("orders").where("customer.phone","==",phone).get().then(s=>{
+if(s.empty){document.getElementById('trackResult').innerHTML=`<div style="background:#f8d7da;padding:12px;border-radius:8px;">No orders for ${phone}</div>`;return;}
+let h="";
+s.forEach(doc=>{
+let o=doc.data();
+let status=o.status||"Pending";
+let steps=["Pending","Packed","Shipped","Delivered"];
+let currentIndex=steps.indexOf(status); if(currentIndex==-1) currentIndex=0;
+let progress=`<div style="display:flex;justify-content:space-between;margin:12px 0;">`;
+steps.forEach((st,i)=>{
+let active=i<=currentIndex ? "background:#e91e63;color:#fff;border:2px solid #e91e63;" : "background:#eee;color:#888;border:2px solid #ddd;";
+let icon=i<=currentIndex ? "✓" : "○";
+progress+=`<div style="text-align:center;flex:1;"><div style="${active}width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:14px;font-weight:bold;">${icon}</div><small style="font-size:10px;display:block;margin-top:4px;font-weight:${i<=currentIndex?'bold':'normal'}">${st}</small></div>`;
+if(i<steps.length-1){ let lineColor=i<currentIndex?"#e91e63":"#ddd"; progress+=`<div style="flex:1;height:3px;background:${lineColor};margin-top:13px;"></div>`; }
+});
+progress+=`</div>`;
+let items=(o.items||[]).map(i=>`${i.name} x${i.qty}`).join(', ');
+let est = o.estimatedDelivery ? `${o.estimatedDeliveryDay||''}, ${o.estimatedDelivery}` : '4-5 Days';
+h+=`<div style="background:#fff;padding:14px;border-radius:12px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,.12);border-left:5px solid #e91e63;">
+${progress}
+<b>${items}</b><br>₹${o.total} - <b style="color:#e91e63;">${status}</b><br>
+<div style="background:#e8f5e9;padding:10px;border-radius:8px;margin:10px 0;text-align:center;border:1px dashed #4caf50;">
+🚚 <b>Delivery by</b><br><span style="font-size:18px;color:#2e7d32;font-weight:bold;">${est}</span><br><small>${o.localDate||''}</small>
+</div>
+<div style="font-size:12px;color:#555;background:#f9f9f9;padding:6px;border-radius:6px;">
+${status=="Pending"?"✅ Order confirmed! Packing soon.":status=="Packed"?"📦 Packed! Ready for shipment.":status=="Shipped"?"🚚 Out for delivery - Keep cash ready!":status=="Delivered"?"✅ Delivered! Thank you ❤️":""}
+</div>
+</div>`;
+});
+document.getElementById('trackResult').innerHTML=h;
+}).catch(e=>{document.getElementById('trackResult').innerHTML="Error: "+e.message;});
+}
+loadProducts();
+let taps=0;
+document.getElementById('mainTitle').addEventListener('click',function(){taps++;if(taps>=3){document.getElementById('secretAdminBtn').style.display='inline-block';setTimeout(()=>{document.getElementById('secretAdminBtn').style.display='none';taps=0;},10000);taps=0;}setTimeout(()=>{taps=0;},2000);});
+function checkAdmin(){let p=prompt("Admin Password:");if(p==="Business@1008"||p==="umas2024"){window.location.href="admin.html";}else if(p!==null){alert("Wrong");}}
+</script>
+</body>
+</html>
