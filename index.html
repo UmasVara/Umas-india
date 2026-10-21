@@ -2,101 +2,53 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Umas.India</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
 body{background:#f5f5f5}
-.header{background:#e91e63;color:#fff;text-align:center;padding:20px 10px}
-.header h1{font-size:26px}
-.header p{font-size:13px;margin-top:6px;line-height:1.4}
-.header a button{background:#fff;color:#e91e63;border:0;padding:8px 18px;border-radius:20px;font-weight:bold;margin-top:10px;cursor:pointer}
-.products{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px}
-.card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 5px rgba(0,0,0,.1)}
-.card img{width:100%;height:190px;object-fit:cover;background:#eee}
-.card-info{padding:8px}
-.card-info b{font-size:14px;display:block;height:32px;overflow:hidden}
-.card-info small{color:#777;font-size:12px}
+.header{background:#e91e63;color:#fff;text-align:center;padding:18px}
+.products{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
+.card{background:#fff;border-radius:10px;overflow:hidden}
+.card img{width:100%;height:180px;object-fit:cover}
+.card-body{padding:8px}
+.card-body b{font-size:14px;display:block}
 .price{font-weight:bold;margin-top:4px}
-.price s{font-weight:normal;color:#999;font-size:12px;margin-left:5px}
-.card-info button{width:100%;background:#e91e63;color:#fff;border:0;padding:8px;border-radius:6px;margin-top:6px;font-weight:bold}
-.track{background:#fff;margin:12px;padding:16px;border-radius:12px;border:1px solid #eee}
-.track input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px}
-.track button{width:100%;padding:12px;background:#e91e63;color:#fff;border:0;border-radius:8px;font-weight:bold;margin-top:10px}
-.footer{text-align:center;padding:20px;font-size:12px}
-.footer a{color:#e91e63;text-decoration:none}
+.btn{width:100%;background:#e91e63;color:#fff;border:0;padding:8px;border-radius:6px;margin-top:6px}
+.track{background:#fff;margin:10px;padding:15px;border-radius:10px}
+.track input{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px}
+.track button{width:100%;padding:10px;background:#e91e63;color:#fff;border:0;border-radius:8px;margin-top:8px}
 </style>
 </head>
 <body>
-
 <div class="header">
 <h1>Umas.India</h1>
 <p>Owner: Umaswara | 7989333257<br>UPI: 7989333257@ybl</p>
-<a href="#trackBox"><button>📦 Track My Order</button></a>
+<a href="#trackBox"><button style="background:#fff;color:#e91e63;border:0;padding:8px 15px;border-radius:20px;margin-top:8px">📦 Track My Order</button></a>
 </div>
-
 <div id="products" class="products"></div>
-
 <div id="trackBox" class="track">
 <h3>📦 Track My Order</h3>
-<p style="font-size:13px;color:#666;margin:5px 0">Enter your phone number</p>
-<input id="phone" type="tel" placeholder="90******11">
-<button onclick="doTrack()">Track Now</button>
-<div id="trackResult" style="margin-top:12px"></div>
+<input id="phone" placeholder="90******11">
+<button onclick="track()">Track Now</button>
+<div id="result"></div>
 </div>
-
-<div class="footer"><a href="admin.html">Admin Login</a></div>
-
+<center style="padding:15px"><a href="admin.html" style="color:#e91e63;font-size:12px">Admin</a></center>
 <script>
-// PRODUCTS - This is your old products
-let defaultProducts = [
-  {id:1, name:"Kanchi Blue Saree", price:100, mrp:108, cat:"Sarees", img:"https://images.unsplash.com/photo-1610030469983-98e550d6193a?w=600"},
-  {id:2, name:"Kanchi Green Saree", price:120, mrp:150, cat:"Sarees", img:"https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600"}
-];
-
-let products = JSON.parse(localStorage.getItem('umas_products_v2') || 'null');
-if(!products){
-  products = defaultProducts;
-  localStorage.setItem('umas_products_v2', JSON.stringify(products));
+let products=JSON.parse(localStorage.getItem('umas_products')||'[]');
+if(products.length==0){
+products=[{id:1,name:"Kanchi Blue Saree",price:100,mrp:108,img:"https://images.unsplash.com/photo-1610030469983-98e550d6193a?w=600"},{id:2,name:"Kanchi Green Saree",price:120,mrp:150,img:"https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600"}];
+localStorage.setItem('umas_products',JSON.stringify(products));
 }
-
-function renderProducts(){
-  document.getElementById('products').innerHTML = products.map(p=>`
-    <div class="card">
-      <img src="${p.img}" onerror="this.src='https://images.unsplash.com/photo-1610030469983-98e550d6193a?w=600'">
-      <div class="card-info">
-        <b>${p.name}</b>
-        <small>${p.cat}</small>
-        <div class="price">₹${p.price} <s>₹${p.mrp||''}</s></div>
-        <button onclick="addToCart(${p.id})">Add to Cart</button>
-      </div>
-    </div>
-  `).join('');
+function show(){
+document.getElementById('products').innerHTML=products.map(p=>`<div class="card"><img src="${p.img}"><div class="card-body"><b>${p.name}</b><div class="price">₹${p.price} <s style="color:#999;font-size:11px">₹${p.mrp}</s></div><button class="btn">Add to Cart</button></div></div>`).join('');
 }
-
-function addToCart(id){
-  let cart = JSON.parse(localStorage.getItem('umas_cart')||'[]');
-  let item = products.find(x=>x.id==id);
-  let found = cart.find(x=>x.id==id);
-  if(found) found.qty++; else cart.push({...item, qty:1});
-  localStorage.setItem('umas_cart', JSON.stringify(cart));
-  alert(item.name + ' Added to Cart!');
+function track(){
+let ph=document.getElementById('phone').value;
+if(!ph)return alert('Enter phone');
+document.getElementById('result').innerHTML='No orders for '+ph;
 }
-
-function doTrack(){
-  let phone = document.getElementById('phone').value.trim();
-  if(!phone) return alert('Enter Phone Number');
-  let orders = JSON.parse(localStorage.getItem('umas_orders')||'[]');
-  let found = orders.filter(o=>o.phone==phone);
-  let box = document.getElementById('trackResult');
-  if(found.length==0){
-    box.innerHTML = `<p style="color:red">No orders found for ${phone.slice(0,2)}******${phone.slice(-2)}</p>`;
-  } else {
-    box.innerHTML = found.map(o=>`<div style="border:1px solid #ddd;padding:10px;border-radius:8px;margin:5px 0"><b>Order #${o.id}</b><br>Total: ₹${o.total}<br>Status: ${o.status||'Confirmed'}</div>`).join('');
-  }
-}
-
-renderProducts();
+show();
 </script>
 </body>
 </html>
