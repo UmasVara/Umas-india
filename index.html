@@ -9,151 +9,80 @@
 body{background:#f5f5f5}
 .header{background:#e91e63;color:#fff;text-align:center;padding:20px}
 .products{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
-.card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}
-.card img{width:100%;height:200px;object-fit:cover}
+.card{background:#fff;border-radius:12px;overflow:hidden}
+.card img{width:100%;height:210px;object-fit:cover}
 .card-body{padding:10px}
 .btn{width:100%;background:#e91e63;color:#fff;border:0;padding:10px;border-radius:8px;margin-top:6px;font-weight:bold}
-.track-page{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;padding:15px;max-height:85vh;overflow:auto;display:none;z-index:999;box-shadow:0 -5px 20px rgba(0,0,0,.3)}
-.order-card{background:#fff;border-left:5px solid #e91e63;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.track-box{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;padding:15px;max-height:85vh;overflow:auto;display:none;z-index:999}
+.order-card{border-left:5px solid #e91e63;background:#fff;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
 </style>
 </head>
 <body>
 
 <div class="header">
-<h1>Umas.India</h1>
-<p>Owner: Umaswara | 7989333257<br>UPI: 7989333257@ybl</p>
-<button onclick="document.getElementById('trackBox').style.display='block'" style="background:#fff;color:#e91e63;border:0;padding:10px 18px;border-radius:25px;margin-top:12px;font-weight:bold">📦 Track My Order</button>
+<h2>Umas.India</h2>
+<p style="font-size:13px">Owner: Umaswara | 7989333257<br>UPI: 7989333257@ybl</p>
+<button onclick="document.getElementById('trackBox').style.display='block'" style="background:#fff;color:#e91e63;border:0;padding:10px 20px;border-radius:25px;margin-top:10px;font-weight:bold">📦 Track My Order</button>
 </div>
 
-<!-- PRODUCTS - VISIBLE NOW -->
 <div class="products">
-  <div class="card">
-    <img src="https://images.pexels.com/photos/7679720/pexels-photo-7679720.jpeg?auto=compress&w=400">
-    <div class="card-body">
-      <b>Kanchi Blue Saree</b><br>
-      <b>₹100 <s style="color:#999;font-size:12px">₹108</s></b>
-      <button class="btn" onclick="buyNow('Kanchi Blue Saree',100)">Add to Cart</button>
-    </div>
-  </div>
-  <div class="card">
-    <img src="https://images.pexels.com/photos/9558246/pexels-photo-9558246.jpeg?auto=compress&w=400">
-    <div class="card-body">
-      <b>Kanchi Green Saree</b><br>
-      <b>₹120 <s style="color:#999;font-size:12px">₹150</s></b>
-      <button class="btn" onclick="buyNow('Kanchi Green Saree',120)">Add to Cart</button>
-    </div>
-  </div>
-  <div class="card">
-    <img src="https://images.pexels.com/photos/9558246/pexels-photo-9558246.jpeg?auto=compress&w=400">
-    <div class="card-body">
-      <b>Rice Cooker</b><br>
-      <b>₹1000</b>
-      <button class="btn" onclick="buyNow('Rice cooker',1000)">Add to Cart</button>
-    </div>
-  </div>
-  <div class="card">
-    <img src="https://images.pexels.com/photos/9558246/pexels-photo-9558246.jpeg?auto=compress&w=400">
-    <div class="card-body">
-      <b>Mens Cotton Shirt</b><br>
-      <b>₹108</b>
-      <button class="btn" onclick="buyNow('Mens cotton shirt',108)">Add to Cart</button>
-    </div>
-  </div>
+  <div class="card"><img src="https://images.pexels.com/photos/7679720/pexels-photo-7679720.jpeg?w=400"><div class="card-body"><b>Kanchi Blue Saree</b><br><b>₹100 <s style="color:#999">₹108</s></b><button class="btn" onclick="buyNow('Kanchi Blue Saree',100)">Add to Cart</button></div></div>
+  <div class="card"><img src="https://images.pexels.com/photos/7679720/pexels-photo-7679720.jpeg?w=400"><div class="card-body"><b>Kanchi Green Saree</b><br><b>₹120 <s style="color:#999">₹150</s></b><button class="btn" onclick="buyNow('Kanchi Green Saree',120)">Add to Cart</button></div></div>
 </div>
 
-<!-- TRACK BOX - WITH FIX -->
-<div id="trackBox" class="track-page">
-  <div style="display:flex;justify-content:space-between">
-    <h2 style="color:#e91e63">📦 Track Your Orders</h2>
-    <button onclick="document.getElementById('trackBox').style.display='none'" style="background:#000;color:#fff;border:0;width:30px;height:30px;border-radius:8px">X</button>
-  </div>
-
-  <input id="buyerPhone" type="tel" placeholder="Enter YOUR phone number" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ccc;margin:12px 0;background:#f0f6ff">
-  <button onclick="searchOrders()" style="width:100%;background:#e91e63;color:#fff;padding:14px;border:0;border-radius:12px;font-weight:bold;font-size:16px">🔍 Check Status</button>
-  
-  <button onclick="forceFix()" style="width:100%;background:#000;color:#fff;padding:12px;border:0;border-radius:12px;margin-top:10px;font-size:13px">⚠️ Click here if you see Sunday,Sunday or undefined - Fix Orders</button>
-
-  <div id="list" style="margin-top:15px"></div>
+<div id="trackBox" class="track-box">
+  <div style="display:flex;justify-content:space-between"><h2 style="color:#e91e63">📦 Track Your Orders</h2><button onclick="this.parentElement.parentElement.style.display='none'" style="background:#000;color:#fff;border:0;width:30px;height:30px;border-radius:8px">X</button></div>
+  <input id="phone" type="tel" placeholder="Enter YOUR phone number" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ccc;margin:15px 0">
+  <button onclick="check()" style="width:100%;background:#e91e63;color:#fff;padding:14px;border:0;border-radius:12px;font-weight:bold">🔍 Check Status</button>
+  <div id="orders" style="margin-top:15px"></div>
 </div>
-
-<center style="padding:15px"><a href="admin.html" style="color:#e91e63">Admin Panel</a></center>
 
 <script>
-function buyNow(name,price){
-  let phone = prompt('Enter your phone number to order:');
-  if(!phone) return;
+// Auto-clean old broken data once
+(function(){
   let all = JSON.parse(localStorage.getItem('umas_orders')||'[]');
-  let d = new Date();
-  let delivery = new Date(); delivery.setDate(d.getDate()+4);
-  all.push({
-    id:Date.now().toString(),
-    phone:phone,
-    productName:name,
-    items:[{name:name,price:price,qty:1}],
-    total:price,
-    status:'Pending',
-    date:d.toISOString(),
-    deliveryDay:delivery.toLocaleDateString('en-IN',{weekday:'long'}),
-    deliveryDate:delivery.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})
-  });
-  localStorage.setItem('umas_orders', JSON.stringify(all));
-  alert('Order placed for '+name+'! Track with phone: '+phone);
-  document.getElementById('buyerPhone').value=phone;
-  document.getElementById('trackBox').style.display='block';
-  searchOrders();
-}
-
-function forceFix(){
-  if(!confirm('Delete broken orders with undefined / Sunday,Sunday?')) return;
-  let all = JSON.parse(localStorage.getItem('umas_orders')||'[]');
-  let good = all.filter(o=>{
+  let cleaned = all.filter(o=>{
     let s = JSON.stringify(o).toLowerCase();
-    return !s.includes('undefined') && !s.includes('nan') && !s.includes('sunday, sunday');
+    return !s.includes('undefined') && !s.includes('nan') && !s.includes('sunday, sunday') && !s.includes(', sunday');
   });
-  good.forEach(o=>{
-    if(!o.deliveryDay || o.deliveryDay.includes(',')){
-      let d = new Date(o.date); d.setDate(d.getDate()+4);
-      o.deliveryDay = d.toLocaleDateString('en-IN',{weekday:'long'});
-      o.deliveryDate = d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-    }
-  });
-  localStorage.setItem('umas_orders', JSON.stringify(good));
-  alert('Fixed! Removed '+(all.length-good.length)+' broken orders. Refreshing...');
-  location.reload();
+  if(all.length!=cleaned.length){
+    localStorage.setItem('umas_orders', JSON.stringify(cleaned));
+  }
+})();
+
+function buyNow(name,price){
+  let ph = prompt('Enter your phone number:');
+  if(!ph) return;
+  let all = JSON.parse(localStorage.getItem('umas_orders')||'[]');
+  let d = new Date(); let del = new Date(); del.setDate(d.getDate()+4);
+  all.push({id:Date.now().toString(),phone:ph,productName:name,total:price,status:'Pending',date:d.toISOString(),dDay:del.toLocaleDateString('en-IN',{weekday:'long'}),dDate:del.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})});
+  localStorage.setItem('umas_orders', JSON.stringify(all));
+  alert('Order placed! Track with '+ph);
+  document.getElementById('phone').value=ph;
+  document.getElementById('trackBox').style.display='block';
+  check();
 }
 
-function searchOrders(){
-  let phone = document.getElementById('buyerPhone').value.trim();
-  if(!phone) return alert('Enter YOUR phone number');
+function check(){
+  let ph = document.getElementById('phone').value.trim();
+  if(!ph) return alert('Enter phone');
   let all = JSON.parse(localStorage.getItem('umas_orders')||'[]');
-  let my = all.filter(o=>String(o.phone)==phone);
-  if(my.length==0){
-    document.getElementById('list').innerHTML=`<p style="text-align:center;padding:20px">No orders for ${phone}</p>`;
-    return;
-  }
-  document.getElementById('list').innerHTML = my.reverse().map(o=>{
+  let my = all.filter(o=>String(o.phone)==ph);
+  if(my.length==0){ document.getElementById('orders').innerHTML=`<p style="text-align:center">No orders for ${ph}</p>`; return; }
+  document.getElementById('orders').innerHTML = my.reverse().map(o=>{
     let canCancel = o.status=='Pending' || o.status=='Packed';
-    let isCancelled = o.status=='Cancelled';
-    let idx = ['Pending','Packed','Shipped','Delivered'].indexOf(o.status);
-    return `<div class="order-card" style="opacity:${isCancelled?0.6:1}">
-      <div style="display:flex;gap:5px;font-size:11px"><b style="color:${idx>=0?'#e91e63':'#999'}">Pending</b> > <b style="color:${idx>=1?'#e91e63':'#999'}">Packed</b> > <b style="color:${idx>=2?'#e91e63':'#999'}">Shipped</b> > <b style="color:${idx>=3?'#e91e63':'#999'}">Delivered</b> - <b style="color:#e91e63">${o.status}</b></div>
-      <b style="display:block;margin:8px 0">${o.productName} x1</b>
-      <div>₹${o.total} - <b style="color:#e91e63">${o.status}</b></div>
-      <div style="border:1px dashed green;background:#f0fff4;padding:10px;border-radius:8px;margin-top:10px;text-align:center">🚚 Delivery by<br><b style="color:green;font-size:18px">${o.deliveryDay}, ${o.deliveryDate}</b><br><small>${new Date(o.date).toLocaleString()}</small></div>
-      ${canCancel?`<button onclick="cancelOrder('${o.id}')" style="margin-top:12px;background:#fff;color:red;border:1px solid red;padding:10px 20px;border-radius:25px;font-weight:bold;width:100%">❌ Cancel This Order</button>`:''}
-      ${isCancelled?`<p style="color:red;font-weight:bold;margin-top:10px">❌ Cancelled - Refund in 24hrs</p>`:''}
-    </div>`;
+    return `<div class="order-card"><div style="font-size:11px">Pending > Packed > Shipped > Delivered - <b style="color:#e91e63">${o.status}</b></div><b style="display:block;margin:8px 0">${o.productName} x1</b><div>₹${o.total} - <b style="color:#e91e63">${o.status}</b></div><div style="border:1px dashed green;background:#f0fff4;padding:10px;border-radius:8px;margin-top:10px;text-align:center">🚚 Delivery by<br><b style="color:green">${o.dDay}, ${o.dDate}</b></div>${canCancel?`<button onclick="cancelOrder('${o.id}')" style="margin-top:10px;background:#fff;color:red;border:1px solid red;padding:8px 18px;border-radius:20px;font-weight:bold;width:100%">❌ Cancel This Order</button>`:''}</div>`;
   }).join('');
 }
 
 function cancelOrder(id){
-  if(!confirm('Cancel? Full refund in 24hrs to UPI.')) return;
+  if(!confirm('Cancel this order? Full refund in 24hrs')) return;
   let all = JSON.parse(localStorage.getItem('umas_orders')||'[]');
   let o = all.find(x=>x.id==id);
   o.status='Cancelled';
   localStorage.setItem('umas_orders', JSON.stringify(all));
-  alert('✅ Cancelled! Refund in 24hrs');
-  searchOrders();
+  alert('Cancelled! Refund in 24hrs');
+  check();
 }
 </script>
 </body>
