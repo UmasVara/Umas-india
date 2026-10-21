@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>TEST</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}body{background:#fffbe6}.top{background:orange;text-align:center;padding:10px;font-weight:bold}.pink{background:#e91e63;color:#fff;text-align:center;padding:18px}.box{background:#fff;margin:10px;padding:12px;border-radius:12px}button{width:100%;padding:12px;border:0;border-radius:10px;font-weight:bold;margin-top:8px}input{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px}</style></head><body>
+<div class="top">🧪 TEST - Cancel Approval Demo</div>
+<div class="pink"><h2>TEST Shop</h2><p>Owner 7989333257</p><a href="#admin"><button style="background:#fff;color:#e91e63;border-radius:20px">Go to Admin ↓</button></a><p style="margin-top:8px"><a href="index.html" style="color:#fff">OLD Shop</a> | <a href="index-new.html" style="color:yellow">NEW Shop</a></p></div>
+<div class="box"><b>Blue Saree - Rs100</b><button onclick="buy('Blue Saree',100)" style="background:#e91e63;color:#fff">Buy Now TEST</button></div>
+<div class="box"><b>Green Saree - Rs120</b><button onclick="buy('Green Saree',120)" style="background:#e91e63;color:#fff">Buy Now TEST</button></div>
+<div id="admin" class="box" style="border:2px solid #000"><h3 style="text-align:center">TEST Admin - Cancel Approval</h3><input id="ph" type="tel" placeholder="Search phone" oninput="show()"><button onclick="show()" style="background:#000;color:#fff">Search</button><button onclick="clearT()" style="background:red;color:#fff">Clear All TEST</button><div id="list" style="margin-top:12px"></div></div>
+<script>
+function buy(n,p){let phone=prompt('Enter phone 9999999999');if(!phone)return;phone=phone.replace(/\D/g,'');if(phone.length<10)return alert('Enter 10 digits');let all=JSON.parse(localStorage.getItem('umas_test_orders')||'[]');all.push({id:'TEST'+Date.now(),phone:phone,productName:n,total:p,status:'Pending',prevStatus:'Pending',cancelReason:'',date:new Date().toISOString()});localStorage.setItem('umas_test_orders',JSON.stringify(all));alert('TEST Order Done');document.getElementById('ph').value=phone;show();}
+function show(){
+let ph=document.getElementById('ph').value.trim();let all=JSON.parse(localStorage.getItem('umas_test_orders')||'[]').filter(o=>o&&o.phone);
+if(ph)all=all.filter(o=>String(o.phone).includes(ph));
+all.sort((a,b)=>{if(a.status=='Cancel Requested'&&b.status!='Cancel Requested')return -1;if(b.status=='Cancel Requested'&&a.status!='Cancel Requested')return 1;return 0;});
+if(all.length==0){document.getElementById('list').innerHTML='<p style=text-align:center;padding:15px>No TEST orders - Buy above</p>';return;}
+document.getElementById('list').innerHTML=all.reverse().map(o=>{
+let box='';let btn='';
+if(o.status=='Pending'||o.status=='Packed'){btn=`<button onclick="requestCancel('${o.id}')" style='background:#fff;color:red;border:1px solid red;padding:5px 10px;border-radius:10px'>Request Cancel</button>`;}
+if(o.status=='Cancel Requested'){box=`<div style='background:#fff3e0;padding:8px;border-radius:6px;margin-top:6px;border:1px solid orange'><b style='color:orange'>⚠️ Cancel Requested</b><br><small>${o.cancelReason}</small><div style='display:flex;gap:6px;margin-top:6px'><button onclick="approve('${o.id}')" style='flex:1;background:green;color:#fff;padding:8px;border-radius:6px'>✅ Approve</button><button onclick="reject('${o.id}')" style='flex:1;background:#000;color:#fff;padding:8px;border-radius:6px'>❌ Reject</button></div></div>`;btn=`<div style='font-size:12px;color:orange'>⏳ Waiting Approval</div>`;}
+if(o.status=='Cancelled')btn=`<div style='font-size:12px;color:red'>❌ Cancelled Approved</div>`;
+return `<div style='background:#f5f5f5;padding:10px;border-radius:8px;margin-bottom:8px;border-left:5px solid ${o.status=='Cancel Requested'?'orange':'#e91e63'}'><b>📱 ${o.phone}</b> - <b style='color:${o.status=='Cancel Requested'?'orange':'#e91e63'}'>${o.status}</b><br><b>${o.productName}</b> Rs${o.total}<br><small>${o.id} | ${new Date(o.date).toLocaleString()}</small><br><div style='margin-top:5px'>${btn}</div>${box}<button onclick="del('${o.id}')" style='margin-top:6px;background:#fff;border:1px solid #000;padding:4px 10px;border-radius:10px'>Delete</button></div>`;
+}).join('');
+}
+function requestCancel(id){let r=prompt('Reason?');let all=JSON.parse(localStorage.getItem('umas_test_orders')||'[]');let o=all.find(x=>x.id==id);if(o){o.prevStatus=o.status;o.status='Cancel Requested';o.cancelReason=r||'No reason';o.cancelRequestDate=new Date().toISOString();localStorage.setItem('umas_test_orders',JSON.stringify(all));show();}}
+function approve(id){let all=JSON.parse(localStorage.getItem('umas_test_orders')||'[]');let o=all.find(x=>x.id==id);if(o){o.status='Cancelled';localStorage.setItem('umas_test_orders',JSON.stringify(all));show();}}
+function reject(id){let all=JSON.parse(localStorage.getItem('umas_test_orders')||'[]');let o=all.find(x=>x.id==id);if(o){o.status=o.prevStatus||'Pending';localStorage.setItem('umas_test_orders',JSON.stringify(all));show();}}
+function del(id){let all=JSON.parse(localStorage.getItem('umas_test_orders')||'[]');all=all.filter(x=>x.id!=id);localStorage.setItem('umas_test_orders',JSON.stringify(all));show();}
+function clearT(){if(!confirm('Clear all TEST?'))return;localStorage.removeItem('umas_test_orders');show();}
+show();
+</script></body></html>
