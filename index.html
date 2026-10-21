@@ -1,77 +1,105 @@
-<!-- TRACK MODAL - CORRECT VERSION -->
-<div id="trackModal" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;padding:15px;max-height:90vh;overflow:auto;z-index:999;box-shadow:0 -5px 20px rgba(0,0,0,.3)">
-  <div style="display:flex;justify-content:space-between">
-    <h2 style="color:#e91e63">📦 Track Your Orders</h2>
-    <button onclick="document.getElementById('trackModal').style.display='none'" style="background:#000;color:#fff;border:0;width:30px;height:30px;border-radius:8px">X</button>
-  </div>
-  
-  <input id="buyerPhone" type="tel" placeholder="Enter YOUR phone number" style="width:100%;padding:14px;border:1px solid #ccc;border-radius:10px;margin:15px 0;background:#f0f6ff">
-  <button onclick="searchMyOrders()" style="width:100%;background:#4caf50;color:#fff;padding:14px;border:0;border-radius:12px;font-weight:bold">🔍 Check Status</button>
-  
-  <div id="buyerOrders" style="margin-top:15px"></div>
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{background:#f2f2f2;font-family:Arial;margin:0}
+.card{border-left:5px solid #e91e63;background:#fff;border-radius:12px;padding:15px;margin:12px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff}
+</style>
+</head>
+<body>
+
+<!-- YOUR TRACK PAGE - FIXED -->
+<div style="padding:15px">
+<input id="buyerPhone" type="tel" placeholder="Enter YOUR phone number" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ccc">
+<button onclick="searchOrders()" style="width:100%;background:#e91e63;color:#fff;padding:14px;border:0;border-radius:12px;margin-top:10px;font-weight:bold">🔍 Check Status</button>
+<button onclick="forceFix()" style="width:100%;background:#000;color:#fff;padding:10px;border:0;border-radius:10px;margin-top:10px;font-size:12px">⚠️ Click here if you see Sunday,Sunday or undefined - Fix Orders</button>
+<div id="list" style="margin-top:15px"></div>
 </div>
 
 <script>
-function openTrack(){ document.getElementById('trackModal').style.display='block'; }
+function forceFix(){
+  if(!confirm('This will delete all broken orders with undefined/NaN and fix dates. Continue?')) return;
+  let all = JSON.parse(localStorage.getItem('umas_orders')||'[]');
+  // Keep only good orders
+  let good = all.filter(o => {
+    let s = JSON.stringify(o);
+    return !s.includes('undefined') && !s.toLowerCase().includes('nan');
+  });
+  // Fix dates
+  good.forEach(o => {
+    let d = new Date(o.date);
+    d.setDate(d.getDate()+4); // Delivery = 4 days later
+    o.deliveryDay = d.toLocaleDateString('en-IN',{weekday:'long'});
+    o.deliveryDate = d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  });
+  localStorage.setItem('umas_orders', JSON.stringify(good));
+  alert('Fixed! Now check again. Broken orders deleted: '+(all.length-good.length));
+  location.reload();
+}
 
-function searchMyOrders(){
+function searchOrders(){
   let phone = document.getElementById('buyerPhone').value.trim();
-  if(!phone){ alert('Please enter your phone number'); return; }
-
+  if(!phone) return alert('Enter phone');
+  
   let allOrders = JSON.parse(localStorage.getItem('umas_orders')||'[]');
-  let myOrders = allOrders.filter(o => String(o.phone).trim() == phone);
-
-  if(myOrders.length == 0){
-    document.getElementById('buyerOrders').innerHTML = `<p style="text-align:center;padding:20px">No orders found for ${phone}<br>Please check number</p>`;
+  let my = allOrders.filter(o => String(o.phone)==phone);
+  
+  if(my.length==0){
+    document.getElementById('list').innerHTML=`<p style="text-align:center">No orders for ${phone}</p>`;
     return;
   }
 
-  document.getElementById('buyerOrders').innerHTML = myOrders.reverse().map(o => {
-    let canCancel = (o.status === 'Pending' || o.status === 'Packed');
-    let isCancelled = o.status === 'Cancelled';
-    
-    // Fix your NaN / undefined bug
-    let itemName = (o.productName || o.items?.[0]?.name || 'Saree').replace(/undefined/g,'').trim();
-    let total = o.total || o.items?.[0]?.price || 108;
+  document.getElementById('list').innerHTML = my.reverse().map(o=>{
+    // FINAL FIX for date - Use only our fixed date
+    if(!o.deliveryDay || o.deliveryDay.includes(',')){
+      let d = new Date(o.date);
+      d.setDate(d.getDate()+4);
+      o.deliveryDay = d.toLocaleDateString('en-IN',{weekday:'long'});
+      o.deliveryDate = d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    }
+    let items = (o.items||[]).filter(i=>i.name && i.name!='undefined').map(i=>`${i.name} x${i.qty||1}`).join(', ') || o.productName;
+    let total = o.total||108;
+    let canCancel = o.status=='Pending' || o.status=='Packed';
+    let isCancelled = o.status=='Cancelled';
+    let statusIdx = ['Pending','Packed','Shipped','Delivered'].indexOf(o.status);
 
     return `
-    <div style="background:#fff;border-left:5px solid ${isCancelled?'#999':'#e91e63'};border-radius:12px;padding:15px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.1)">
-      <div style="font-size:12px;color:#666;display:flex;justify-content:space-between">
-        <span>Pending > Packed > Shipped > Delivered</span>
-        <b style="color:${isCancelled?'#999':'#e91e63'}">${o.status}</b>
+    <div class="card" style="opacity:${isCancelled?0.6:1};border-color:${isCancelled?'#999':'#e91e63'}">
+      <div style="display:flex;justify-content:space-between;font-size:12px">
+        <div style="display:flex;align-items:center;gap:5px">
+          <div class="dot" style="background:${statusIdx>=0?'#e91e63':'#ddd'}">${statusIdx>=0?'✓':'○'}</div>Pending
+          <div style="width:30px;height:2px;background:${statusIdx>=1?'#e91e63':'#ddd'}"></div>
+          <div class="dot" style="background:${statusIdx>=1?'#e91e63':'#ddd'}">${statusIdx>=1?'✓':'○'}</div>Packed
+          <div style="width:30px;height:2px;background:${statusIdx>=2?'#e91e63':'#ddd'}"></div>
+          <div class="dot" style="background:${statusIdx>=2?'#e91e63':'#ddd'}">${statusIdx>=2?'✓':'○'}</div>Shipped
+          <div style="width:30px;height:2px;background:${statusIdx>=3?'#e91e63':'#ddd'}"></div>
+          <div class="dot" style="background:${statusIdx>=3?'#e91e63':'#ddd'}">${statusIdx>=3?'✓':'○'}</div>Delivered
+        </div>
       </div>
-      <b style="display:block;margin:8px 0">${itemName} x1</b>
+      <b style="display:block;margin:12px 0 4px">${items}</b>
       <div>₹${total} - <b style="color:#e91e63">${o.status}</b></div>
-      
-      <div style="border:1px dashed green;padding:8px;border-radius:8px;margin-top:10px;text-align:center">
-        🚚 Delivery by ${new Date(o.date).toDateString()}
+      <div style="border:1px dashed #4caf50;background:#f0fff4;border-radius:10px;padding:10px;margin-top:10px;text-align:center">
+        🚚 Delivery by<br><b style="color:green;font-size:18px">${o.deliveryDay}, ${o.deliveryDate}</b><br>
+        <small>${new Date(o.date).toLocaleString()}</small>
       </div>
-
-      ${canCancel ? `
-        <button onclick="buyerCancelOrder('${o.id}','${phone}')" style="margin-top:12px;background:#fff;color:red;border:1px solid red;padding:8px 18px;border-radius:20px;font-weight:bold;cursor:pointer">❌ Cancel This Order</button>
-        <p style="font-size:11px;color:#666;margin-top:4px">You can cancel before Shipped</p>
-      ` : ''}
-
-      ${isCancelled ? `<p style="color:red;margin-top:8px">❌ Cancelled - Refund in 24hrs</p>` : ''}
+      ${canCancel?`<button onclick="cancelOrder('${o.id}')" style="margin-top:12px;background:#fff;color:red;border:1px solid red;padding:10px 20px;border-radius:25px;font-weight:bold;width:100%">❌ Cancel This Order</button><p style="font-size:11px;text-align:center;color:#666">Can cancel before Shipped</p>`:''}
+      ${isCancelled?`<p style="color:red;font-weight:bold;margin-top:10px">❌ Cancelled - Refund in 24hrs</p>`:''}
     </div>`;
   }).join('');
+  localStorage.setItem('umas_orders', JSON.stringify(allOrders));
 }
 
-function buyerCancelOrder(orderId, phone){
-  if(!confirm('Cancel this order?\nYou will get FULL refund within 24 hours to your UPI/PhonePe.')) return;
-  
-  let reason = prompt('Reason for cancel?','Ordered by mistake');
-  
-  let allOrders = JSON.parse(localStorage.getItem('umas_orders')||'[]');
-  let order = allOrders.find(o => o.id == orderId);
-  if(order){
-    order.status = 'Cancelled';
-    order.cancelReason = reason;
-    order.cancelAt = new Date().toLocaleString();
-    localStorage.setItem('umas_orders', JSON.stringify(allOrders));
-    
-    // Auto WhatsApp to you for refund
-    let msg = `❌ BUYER CANCELLED\nPhone: ${order.phone}\nItem: ${order.productName}\nAmount: ₹${order.total}\nReason: ${reason}\nPlease refund in 24hrs`;
-    window.open('https://wa.me/917989333257?text='+encodeURIComponent(msg),'_blank');
-    
-    alert('✅ Order Cancelled!
+function cancelOrder(id){
+  if(!confirm('Cancel this order? Full refund in 24hrs.')) return;
+  let all = JSON.parse(localStorage.getItem('umas_orders')||'[]');
+  let o = all.find(x=>x.id==id);
+  o.status='Cancelled';
+  localStorage.setItem('umas_orders', JSON.stringify(all));
+  alert('Cancelled! Refund in 24hrs');
+  searchOrders();
+}
+</script>
+</body>
+</html>
