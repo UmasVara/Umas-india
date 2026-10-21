@@ -1,48 +1,19 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin - Umas.India</title>
-<style>*{box-sizing:border-box;font-family:system-ui} body{padding:15px;background:#f5f5f5} input,textarea{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:8px} button{padding:10px 15px;border:none;border-radius:8px;font-weight:bold;cursor:pointer} .card{background:#fff;padding:15px;border-radius:10px;margin:10px 0}</style>
-</head>
-<body>
-<h2>Umas.India Admin - Amazon Style</h2>
-<div id="login"><input id="pass" type="password" placeholder="Password"><button onclick="login()">Login</button></div>
-<div id="panel" style="display:none">
-<div class="card">
-<h3>Add Product (Sliding + Video)</h3>
-<input id="pName" placeholder="Product Name">
-<input id="pPrice" type="number" placeholder="Price e.g. 1261">
-<input id="pOld" type="number" placeholder="Old Price e.g. 2995">
-<input id="pRating" placeholder="Rating e.g. 3.9 (1,412)">
-<textarea id="pImages" rows="4" placeholder="Image URLs - One per line (3-4 for slider)"></textarea>
-<input id="pVideo" placeholder="YouTube Video Link (optional) - e.g. https://youtu.be/...">
-<textarea id="pHighlights" rows="4" placeholder="Highlights - One per line"></textarea>
-<textarea id="pDesc" rows="3" placeholder="Full Description"></textarea>
-<button onclick="addProduct()" style="background:#ffd814;width:100%">Add Product</button>
-</div>
-<div class="card"><h3>Products</h3><div id="plist"></div></div>
-<div class="card"><h3>Orders - Privacy Protected (90******11)</h3><div id="olist"></div></div>
-</div>
-<script>
-function login(){if(document.getElementById('pass').value==='Business@1008'){document.getElementById('login').style.display='none';document.getElementById('panel').style.display='block';render();}else alert('Wrong password')}
-let products=JSON.parse(localStorage.getItem('umas_products')||'[]');
-function addProduct(){
- let name=document.getElementById('pName').value, price=Number(document.getElementById('pPrice').value), oldPrice=Number(document.getElementById('pOld').value), rating=document.getElementById('pRating').value;
- let images=document.getElementById('pImages').value.split('\n').map(s=>s.trim()).filter(Boolean);
- let video=document.getElementById('pVideo').value.trim();
- let highlights=document.getElementById('pHighlights').value.split('\n').map(s=>s.trim()).filter(Boolean);
- let desc=document.getElementById('pDesc').value;
- if(!name||!price||images.length===0) return alert('Name, Price, 1 Image required');
- products.push({id:Date.now(),name,price,oldPrice:oldPrice||price*2,rating:rating||'4.5',images,video,highlights,desc});
- localStorage.setItem('umas_products',JSON.stringify(products));
- alert('Added!'); render();
-}
-function maskPhone(p){ if(!p) return ''; return p.substring(0,2)+'******'+p.substring(p.length-2); }
-function render(){
- document.getElementById('plist').innerHTML=products.map((p,i)=>`<div style="border-bottom:1px solid #eee;padding:8px 0;display:flex;gap:10px"><img src="${p.images[0]}" style="width:50px;height:50px;object-fit:cover"><div style="flex:1"><b>${p.name}</b><br>₹${p.price} | ${p.images.length} imgs ${p.video?'| Video':''}</div><button onclick="delProd(${i})" style="background:#ffdddd">Delete</button></div>`).join('');
- let orders=JSON.parse(localStorage.getItem('umas_orders')||'[]');
- document.getElementById('olist').innerHTML=orders.length?orders.reverse().map(o=>`<div style="border:1px solid #ddd;padding:10px;border-radius:8px;margin:6px 0"><b>#${o.id}</b> - ${o.name}<br>Phone: <span id="ph-${o.id}">${maskPhone(o.phone)}</span> <button onclick="let el=document.getElementById('ph-${o.id}'); el.innerText=el.innerText.includes('*')?'${o.phone}':'${maskPhone(o.phone)}'">👁️</button><br>Total: ₹${o.total}</div>`).join(''):'No orders';
-}
-function delProd(i){ if(confirm('Delete?')){products.splice(i,1);localStorage.setItem('umas_products',JSON.stringify(products));render();}}
-</script>
-</body>
-</html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Umas.India</title>
+<style>
+*{box-sizing:border-box;font-family:system-ui} body{margin:0;background:#f5f5f5}
+header{background:#131921;color:#fff;padding:12px 15px;display:flex;justify-content:space-between;position:sticky;top:0;z-index:10}
+.products{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
+.prod{background:#fff;border-radius:10px;overflow:hidden;cursor:pointer}
+.prod img{width:100%;height:160px;object-fit:cover}
+.prod div{padding:8px;font-size:14px}
+#detail{position:fixed;inset:0;background:#fff;z-index:20;display:none;overflow:auto}
+.slider{position:relative;height:350px;background:#fafafa;display:flex;overflow:hidden}
+.slide{min-width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.slide img{max-width:100%;max-height:100%}
+.slide iframe{width:100%;height:100%;border:0}
+.btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.3);color:#fff;border:0;width:35
