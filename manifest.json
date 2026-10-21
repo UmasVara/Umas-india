@@ -1,1 +1,17 @@
-https://github.com/UmasVara/Umas-india/edit/main/manifest.json
+{
+  "name": "UmasIndia - Sarees & Shirts",
+  "short_name": "UmasIndia",
+  "description": "Buy latest Sarees, Shirts, Dresses online - Order via WhatsApp - Umas India Bangalore",
+  "start_url": "/Umas-india/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#E91E63",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
