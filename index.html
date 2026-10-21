@@ -18,13 +18,15 @@ body{margin:0;font-family:system-ui;background:#fff}
 .card img{width:100%;height:200px;object-fit:cover}
 .card-body{padding:10px}
 .buy{background:#e91e63;color:#fff;border:none;width:100%;padding:10px;border-radius:8px;font-weight:bold;margin-top:6px;cursor:pointer}
-#checkoutModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:30;overflow-y:auto}
+#checkoutModal,#trackModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:30;overflow-y:auto}
 .modalBox{background:#fff;max-width:450px;margin:20px auto;padding:20px;border-radius:15px}
 .modalBox input, .modalBox textarea{width:92%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:8px}
 .payOption{display:block;padding:12px;margin:8px 0;border-radius:10px;border:2px solid #ddd;cursor:pointer}
 .payOption:has(input:checked){border-color:#e91e63;background:#fce4ec}
 .qtyBtn{border:1px solid #ccc;background:#fff;padding:2px 8px;border-radius:4px;cursor:pointer;font-weight:bold}
 .removeBtn{background:#ff1744;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px}
+.trackBtn{background:#fff;color:#e91e63;border:none;padding:7px 16px;border-radius:20px;font-weight:bold;margin-top:10px;cursor:pointer}
+.statusBadge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:bold}
 </style>
 </head>
 <body>
@@ -32,6 +34,7 @@ body{margin:0;font-family:system-ui;background:#fff}
 <div class="header">
 <h1 id="mainTitle">Umas.India</h1>
 <p>Owner: Umasvara | 7989333257<br>UPI: 7989333257@ybl</p>
+<button class="trackBtn" onclick="openTrack()">📦 Track My Order</button>
 <button id="secretAdminBtn" onclick="checkAdmin()">Admin</button>
 </div>
 
@@ -42,7 +45,7 @@ body{margin:0;font-family:system-ui;background:#fff}
 <div id="checkoutModal">
 <div class="modalBox">
 <h2 style="margin-top:0;color:#e91e63;">Checkout</h2>
-<button onclick="closeCheckout()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X Close</button>
+<button onclick="closeCheckout()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X</button>
 <div style="clear:both"></div>
 <div id="cartItems"></div>
 <h3>Total: ₹<span id="totalAmt">0</span></h3>
@@ -54,6 +57,18 @@ body{margin:0;font-family:system-ui;background:#fff}
 <label class="payOption" style="background:#e3f2fd;"><input type="radio" name="pay" value="upi"> <b>📱 UPI - 7989333257@ybl</b></label>
 <label class="payOption" style="background:#fff3e0;"><input type="radio" name="pay" value="whatsapp"> <b>💬 WhatsApp Order</b></label>
 <button onclick="placeOrder()" style="width:100%;background:#e91e63;color:#fff;padding:16px;border:none;border-radius:10px;font-size:18px;font-weight:bold;margin-top:15px;">✅ Place My Order</button>
+</div>
+</div>
+
+<div id="trackModal">
+<div class="modalBox">
+<h2 style="color:#e91e63;margin-top:0;">📦 Track Your Orders</h2>
+<button onclick="closeTrack()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X</button>
+<div style="clear:both"></div>
+<p>Enter phone number used for order:</p>
+<input id="trackPhone" placeholder="Enter Phone Number e.g. 9052878711">
+<button onclick="trackOrders()" style="width:100%;background:#4caf50;color:#fff;padding:12px;border:none;border-radius:8px;font-weight:bold;margin-top:8px;">🔍 Check Status</button>
+<div id="trackResult" style="margin-top:15px;"></div>
 </div>
 </div>
 
@@ -78,7 +93,6 @@ products=[
 render();
 });
 }
-
 function render(){
 let html='';
 products.forEach((p,i)=>{
@@ -87,7 +101,6 @@ html+=`<div class="card"><img src="${p.image||p.img}"><div class="card-body"><b>
 document.getElementById('products').innerHTML=html;
 updateCartCount();
 }
-
 function addToCart(index){
 let p=products[index];
 let existing=cart.find(c=>c.name===p.name);
@@ -97,14 +110,8 @@ localStorage.setItem('umas_cart',JSON.stringify(cart));
 updateCartCount();
 alert(p.name+" Added!");
 }
-function updateCartCount(){
-document.getElementById('cartCount').innerText=cart.reduce((s,c)=>s+c.qty,0);
-}
-function openCheckout(){
-if(cart.length===0){alert("Cart empty");return;}
-renderCheckoutItems();
-document.getElementById('checkoutModal').style.display='block';
-}
+function updateCartCount(){document.getElementById('cartCount').innerText=cart.reduce((s,c)=>s+c.qty,0);}
+function openCheckout(){if(cart.length===0){alert("Cart empty");return;}renderCheckoutItems();document.getElementById('checkoutModal').style.display='block';}
 function renderCheckoutItems(){
 let html='';let total=0;
 cart.forEach((c,idx)=>{
@@ -116,11 +123,7 @@ document.getElementById('totalAmt').innerText=total;
 }
 function changeQty(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);saveCart();}
 function removeItem(i){cart.splice(i,1);saveCart();}
-function saveCart(){
-localStorage.setItem('umas_cart',JSON.stringify(cart));
-if(cart.length===0){closeCheckout();render();return;}
-renderCheckoutItems();updateCartCount();
-}
+function saveCart(){localStorage.setItem('umas_cart',JSON.stringify(cart));if(cart.length===0){closeCheckout();render();return;}renderCheckoutItems();updateCartCount();}
 function closeCheckout(){document.getElementById('checkoutModal').style.display='none';}
 
 function placeOrder(){
@@ -129,32 +132,4 @@ const name=document.getElementById('custName').value.trim();
 const phone=document.getElementById('custPhone').value.trim();
 const address=document.getElementById('custAddress').value.trim();
 if(!name||!phone||!address){alert("Fill all fields");return;}
-let total=cart.reduce((s,c)=>s+c.price*c.qty,0);
-const orderData={
-items:cart,total:total,method:method,
-customer:{name:name,phone:phone,address:address},
-status: method==='cod' ? 'COD Pending' : method,
-date: firebase.firestore.FieldValue.serverTimestamp(),
-localDate: new Date().toLocaleString()
-};
-db.collection("orders").add(orderData).then(()=>{
-let orders=JSON.parse(localStorage.getItem('umas_orders')||'[]');
-orders.push(orderData);localStorage.setItem('umas_orders',JSON.stringify(orders));
-if(method==='cod'){alert("✅ COD Order Placed! Total ₹"+total);}
-else if(method==='upi'){let link=`upi://pay?pa=7989333257@ybl&pn=Umas.India&am=${total}&cu=INR`;window.location.href=link;setTimeout(()=>alert("Pay ₹"+total+" to 7989333257@ybl"),1500);}
-else if(method==='whatsapp'){let msg=`*New Order*%0A`;cart.forEach(c=>msg+=`${c.name} x${c.qty}%0A`);msg+=`Total ₹${total}%0A${name} ${phone}`;window.open(`https://wa.me/917989333257?text=${msg}`,'_blank');}
-cart=[];localStorage.setItem('umas_cart',JSON.stringify(cart));closeCheckout();render();
-document.getElementById('custName').value='';document.getElementById('custPhone').value='';document.getElementById('custAddress').value='';
-}).catch(e=>{alert("Error: "+e.message);});
-}
-
-loadProducts();
-let taps=0;
-document.getElementById('mainTitle').addEventListener('click',function(){
-taps++;if(taps>=3){document.getElementById('secretAdminBtn').style.display='inline-block';setTimeout(()=>{document.getElementById('secretAdminBtn').style.display='none';taps=0;},10000);taps=0;}
-setTimeout(()=>{taps=0;},2000);
-});
-function checkAdmin(){let p=prompt("Admin Password:");if(p==="Business@1008"||p==="umas2024"){window.location.href="admin.html";}else if(p!==null){alert("Wrong");}}
-</script>
-</body>
-</html>
+let total=cart.reduce((s,c)=>s+c.price*c
