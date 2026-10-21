@@ -8,26 +8,26 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto}
 body{background:#f5f5f7;color:#111}
 header{background:#131921;color:#fff;padding:12px 15px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
-header h1{font-size:20px;letter-spacing:0.5px;cursor:pointer;user-select:none}
-header .cart-icon{position:relative;cursor:pointer;font-size:22px}
+header h1{font-size:20px;cursor:pointer}
+.cart-icon{position:relative;cursor:pointer;font-size:22px}
 #cartCount{position:absolute;top:-8px;right:-10px;background:#febd69;color:#000;font-size:12px;padding:2px 6px;border-radius:50%;font-weight:bold}
 .search-bar{background:#fff;padding:10px;display:flex;gap:8px;position:sticky;top:48px;z-index:99}
-.search-bar input{flex:1;padding:10px 12px;border:1px solid #ccc;border-radius:8px;outline:none}
+.search-bar input{flex:1;padding:10px 12px;border:1px solid #ccc;border-radius:8px}
 .products{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
 .product{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.1);cursor:pointer}
 .product img{width:100%;height:180px;object-fit:cover}
 .product-info{padding:8px}
 .product-info h3{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.price{color:#B12704;font-weight:700;margin-top:4px}
+.price{color:#B12704;font-weight:700}
 .oldprice{font-size:12px;color:#888;text-decoration:line-through;margin-left:5px}
 .track-section{background:#fff;margin:10px;padding:15px;border-radius:10px}
 .track-section input{width:100%;padding:10px;margin:8px 0;border:1px solid #ccc;border-radius:8px}
 .track-section button{width:100%;padding:10px;background:#ffd814;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
 #productModal{position:fixed;inset:0;background:#fff;z-index:1000;display:none;overflow-y:auto}
-.modal-top{position:sticky;top:0;background:#fff;z-index:10;display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee}
+.modal-top{position:sticky;top:0;background:#fff;display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee}
 .close-btn{font-size:22px;background:#eee;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;cursor:pointer}
-.slider-wrap{position:relative;background:#fff;overflow:hidden}
-.slides{display:flex;transition:transform 0.3s ease;touch-action:pan-y}
+.slider-wrap{position:relative;overflow:hidden}
+.slides{display:flex;transition:transform 0.3s ease}
 .slide{min-width:100%;height:380px;display:grid;place-items:center;background:#fafafa}
 .slide img{max-width:100%;max-height:100%;object-fit:contain}
 .slide iframe{width:100%;height:100%;border:none}
@@ -43,7 +43,7 @@ header .cart-icon{position:relative;cursor:pointer;font-size:22px}
 .action-bar{position:sticky;bottom:0;background:#fff;padding:10px;border-top:1px solid #eee;display:flex;gap:10px}
 .btn-add{flex:1;background:#ffd814;border:none;padding:12px;border-radius:20px;font-weight:bold;cursor:pointer}
 .btn-buy{flex:1;background:#ffa41c;border:none;padding:12px;border-radius:20px;font-weight:bold;cursor:pointer}
-.cart-drawer{position:fixed;top:0;right:-100%;width:85%;max-width:400px;height:100%;background:#fff;z-index:1100;transition:0.3s;overflow:auto;box-shadow:-2px 0 10px rgba(0,0,0,0.2)}
+.cart-drawer{position:fixed;top:0;right:-100%;width:85%;max-width:400px;height:100%;background:#fff;z-index:1100;transition:0.3s;overflow:auto}
 .cart-drawer.open{right:0}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;z-index:1050}
 .overlay.show{display:block}
@@ -65,6 +65,7 @@ header .cart-icon{position:relative;cursor:pointer;font-size:22px}
 <button onclick="trackOrder()">Track Now</button>
 <div id="trackResult" style="margin-top:10px"></div>
 </div>
+
 <div id="productModal">
 <div class="modal-top"><span style="font-weight:bold">Product Details</span><div class="close-btn" onclick="closeProduct()">✕</div></div>
 <div class="slider-wrap">
@@ -76,11 +77,11 @@ header .cart-icon{position:relative;cursor:pointer;font-size:22px}
 <div class="detail-body">
 <span class="badge">Great Indian Festival</span>
 <h2 id="dTitle" style="margin:8px 0;font-size:18px"></h2>
-<div><span id="dPrice" class="price" style="font-size:22px"></span><span id="dOld" class="oldprice"></span> <span style="color:#067D62;font-size:14px"> Inclusive</span></div>
+<div><span id="dPrice" class="price" style="font-size:22px"></span><span id="dOld" class="oldprice"></span></div>
 <div style="margin:8px 0">⭐ <span id="dRating"></span> | 11 mins delivery</div>
 <div class="highlights"><b>HIGHLIGHTS</b><ul id="dHighlights"></ul></div>
-<div style="margin:12px 0"><b>Product Description</b><p id="dDesc" style="font-size:14px;margin-top:6px;line-height:1.5;color:#333"></p></div>
-<div style="background:#f5f5f5;padding:10px;border-radius:8px;font-size:13px"><b>Return:</b> 10 Days Replacement<br><b>Seller:</b> Umas.India<br><b>Delivery:</b> 4 Days - COD Available</div>
+<div style="margin:12px 0"><b>Product Description</b><p id="dDesc" style="font-size:14px;margin-top:6px;line-height:1.5"></p></div>
+<div style="background:#f5f5f5;padding:10px;border-radius:8px;font-size:13px"><b>Return:</b> 10 Days Replacement<br><b>Seller:</b> Umas.India<br><b>Delivery:</b> 4 Days - COD</div>
 <div style="height:80px"></div>
 </div>
 <div class="action-bar">
@@ -88,6 +89,7 @@ header .cart-icon{position:relative;cursor:pointer;font-size:22px}
 <button class="btn-buy" onclick="buyNow()">Buy Now</button>
 </div>
 </div>
+
 <div class="overlay" id="overlay" onclick="closeCart();closeProduct()"></div>
 <div class="cart-drawer" id="cartDrawer">
 <div style="padding:15px;display:flex;justify-content:space-between;border-bottom:1px solid #eee"><b>Your Cart</b><span style="cursor:pointer" onclick="closeCart()">✕</span></div>
@@ -99,11 +101,12 @@ header .cart-icon{position:relative;cursor:pointer;font-size:22px}
 <button onclick="placeOrder()" style="width:100%;padding:12px;background:#ffa41c;border:none;border-radius:8px;font-weight:bold;margin-top:10px">Place Order - COD</button>
 </div>
 </div>
+
 <script>
 let tap=0; document.getElementById('mainTitle').addEventListener('click',()=>{tap++; if(tap>=3){document.getElementById('adminSecret').style.display='block';} setTimeout(()=>tap=0,2000);});
 let products = JSON.parse(localStorage.getItem('umas_products') || 'null') || [
-{id:1,name:"Pigeon Joy 400W Electric Rice Cooker - White",price:1261,oldPrice:2995,rating:"3.9 (1,412)",images:["https://m.media-amazon.com/images/I/61vR+0lG5rL._SL1000_.jpg","https://m.media-amazon.com/images/I/71k+3nY8sLL._SL1000_.jpg"],video:"https://www.youtube.com/embed/dQw4w9WgXcQ",highlights:["Pigeon by Stovekraft Joy Rice Cooker with Single pot","White | 400 Watts | Aluminium Cooking Pot","Energy Efficient Cooking","Toughened Glass Lid"],desc:"Pigeon Rice Cooker with Single pot, 1 Litres (White) 400 Watts Aluminium Cooking Pot | Measuring Cup | Spatula | Energy Efficient Cooking."},
-{id:2,name:"Banarasi Silk Saree - Festive Red",price:1499,oldPrice:2999,rating:"4.5 (890)",images:["https://images.unsplash.com/photo-1610030469983-98e550d6193a?w=600","https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600"],video:"",highlights:["Pure Banarasi Silk","Festive Wear","Blouse Included"],desc:"Beautiful Banarasi Silk Saree perfect for festivals and weddings."}
+{id:1,name:"Pigeon Joy 400W Electric Rice Cooker - White",price:1261,oldPrice:2995,rating:"3.9 (1,412)",images:["https://m.media-amazon.com/images/I/61vR+0lG5rL._SL1000_.jpg","https://m.media-amazon.com/images/I/71k+3nY8sLL._SL1000_.jpg"],video:"https://www.youtube.com/embed/dQw4w9WgXcQ",highlights:["Pigeon by Stovekraft Joy Rice Cooker","White | 400 Watts | Aluminium Pot","Energy Efficient","Toughened Glass Lid"],desc:"Pigeon Rice Cooker - 400W, 1L, Aluminium pot, Measuring cup, Spatula."},
+{id:2,name:"Banarasi Silk Saree - Festive Red",price:1499,oldPrice:2999,rating:"4.5 (890)",images:["https://images.unsplash.com/photo-1610030469983-98e550d6193a?w=600","https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600"],video:"",highlights:["Pure Banarasi Silk","Festive Wear","Blouse Included"],desc:"Beautiful Banarasi Silk Saree perfect for festivals."}
 ];
 localStorage.setItem('umas_products',JSON.stringify(products));
 let cart=JSON.parse(localStorage.getItem('umas_cart')||'[]');
@@ -111,10 +114,8 @@ let currentProduct=null,currentSlide=0,touchStartX=0;
 function renderProducts(){
  const q=document.getElementById('search').value.toLowerCase();
  const list=products.filter(p=>p.name.toLowerCase().includes(q));
- document.getElementById('products').innerHTML=list.map(p=>`
-  <div class="product" onclick="openProduct(${p.id})">
-    <img src="${p.images[0]}"><div class="product-info"><h3>${p.name}</h3><div><span class="price">₹${p.price}</span><span class="oldprice">₹${p.oldPrice}</span></div><div style="font-size:12px">⭐ ${p.rating}</div></div>
-  </div>`).join(''); updateCartCount();
+ document.getElementById('products').innerHTML=list.map(p=>`<div class="product" onclick="openProduct(${p.id})"><img src="${p.images[0]}"><div class="product-info"><h3>${p.name}</h3><div><span class="price">₹${p.price}</span><span class="oldprice">₹${p.oldPrice}</span></div><div style="font-size:12px">⭐ ${p.rating}</div></div></div>`).join('');
+ updateCartCount();
 }
 function openProduct(id){
  currentProduct=products.find(p=>p.id===id); currentSlide=0;
@@ -129,8 +130,7 @@ function openProduct(id){
  if(currentProduct.video){ slidesData.push({isVideo:true,url:currentProduct.video}); }
  slidesEl.innerHTML=slidesData.map(s=>{
    if(typeof s==='object' && s.isVideo){ 
-     let url=s.url; if(url.includes('youtube.com/watch')) url=url.replace('watch?v=','embed/'); if(url.includes('youtu.be')) url='https://www.youtube.com/embed/'+url.split('/').pop();
-     return `<div class="slide"><iframe src="${url}" allowfullscreen></iframe></div>` 
+     let url=s.url; if   return `<div class="slide"><iframe src="${url}" allowfullscreen></iframe></div>` 
    } else { return `<div class="slide"><img src="${s}"></div>` }
  }).join('');
  document.getElementById('dots').innerHTML=slidesData.map((_,i)=>`<div class="dot ${i===0?'active':''}"></div>`).join('');
