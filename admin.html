@@ -1,19 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Umas.India</title>
-<style>
-*{box-sizing:border-box;font-family:system-ui} body{margin:0;background:#f5f5f5}
-header{background:#131921;color:#fff;padding:12px 15px;display:flex;justify-content:space-between;position:sticky;top:0;z-index:10}
-.products{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
-.prod{background:#fff;border-radius:10px;overflow:hidden;cursor:pointer}
-.prod img{width:100%;height:160px;object-fit:cover}
-.prod div{padding:8px;font-size:14px}
-#detail{position:fixed;inset:0;background:#fff;z-index:20;display:none;overflow:auto}
-.slider{position:relative;height:350px;background:#fafafa;display:flex;overflow:hidden}
-.slide{min-width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-.slide img{max-width:100%;max-height:100%}
-.slide iframe{width:100%;height:100%;border:0}
-.btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.3);color:#fff;border:0;width:35
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin - Umas.India</title><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script><style>body{font-family:system-ui;padding:12px;background:#f0f2f5;margin:0}input,select{width:100%;padding:11px;margin:6px 0;border-radius:8px;border:1px solid #ccc;box-sizing:border-box}button{background:#e91e63;color:#fff;border:none;padding:12px;border-radius:8px;width:100%;font-weight:700;margin:6px 0;cursor:pointer}.card{background:#fff;padding:14px;margin:10px 0;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.1)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.status{padding:6px 10px;border-radius:20px;font-weight:bold;font-size:13px}.s-pending{background:#fff3cd}.s-packed{background:#cfe2ff}.s-shipped{background:#d1e7dd}.s-delivered{background:#a3cfbb}.s-cancelled{background:#f8d7da}</style></head><body>
+<div id="a" style="max-width:380px;margin:60px auto;background:#fff;padding:20px;border-radius:16px;text-align:center"><h2>Admin Login</h2><input id="p" type="password" placeholder="Password"><button onclick="if(p.value==='umas2024'||p.value==='Business@1008'){a.style.display='none';b.style.display='block';load()}else alert('Wrong')">Login</button></div>
+<div id="b" style="display:none;max-width:700px;margin:0 auto"><h2>Umas.India Admin</h2><div style="background:#fff;padding:12px;border-radius:12px"><input id="n" placeholder="Name"><input id="pr" type="number" placeholder="Price"><input id="mr" type="number" placeholder="MRP"><select id="ct"><option>Sarees</option><option>Kurtis</option><option>Menswear</option><option>Kidswear</option><option>Home</option></select><input id="im" placeholder="Image URL"><button onclick="add()">Add LIVE</button></div><h3>Products (<span id="co">0</span>)</h3><div id="pl" class="grid"></div><h3>Orders (<span id="oc">0</span>)</h3><div id="od"></div></div>
+<script>
+const C={apiKey:"AIzaSyA2CKqJnhdVijyCmrJPrxP21fVhIQI9LWk",authDomain:"umasindia-4cd69.firebaseapp.com",projectId:"umasindia-4cd69",storageBucket:"umasindia-4cd69.firebasestorage.app",messagingSenderId:"441625672930",appId:"1:441625672930:web:0e80f6a292950d6dbd72bb"};firebase.initializeApp(C);const db=firebase.firestore();
+function add(){let d={name:n.value,price:Number(pr.value),mrp:Number(mr.value),category:ct.value,image:im.value,date:new Date()};if(!d.name||!d.price)return alert("Fill");db.collection("products").add(d).then(()=>{alert("Added");n.value='';pr.value='';})}
+function load(){
+db.collection("products").orderBy("date","desc").onSnapshot(s=>{let h="";let c=0;s.forEach(x=>{c++;let p=x.data();h+=`<div class=card><img src=${p.image} style=width:100%;height:80px;object-fit:cover><br>${p.name} ₹${p.price}<br><button onclick=db.collection('products').doc('${x.id}').delete() style=background:#333>Delete</button></div>`});pl.innerHTML=h;co.innerText=c});
+db.collection("orders").orderBy("date","desc").onSnapshot(s=>{
+let h="";let count=0;
+s.forEach(doc=>{
+count++;
+let o=doc.data();let id=doc.id;
+let d=o.localDate||o.date?.toDate?.()?.toLocaleString()||'Now';
+let items=(o.items||[]).map(i=>`${i.name} x${i.qty}`).join(', ');
+let st=o.status||o.method||'pending';
+let addr=o.customer?.address||'No address';
+let name=o.customer?.name||'';let phone=o.customer?.phone||'';
+// Delivery date logic - if old order has no delivery date, calculate +4 days from order date
+let estDelivery = o.estimatedDelivery || '';
+let estDay = o.estimatedDeliveryDay || '';
+if(!estDelivery && o.date){
+  try{
+    let od = o.date.toDate ? o.date.toDate() : new Date(d);
+    let dd = new Date(od); dd.setDate(dd.getDate()+4);
+    estDelivery = dd.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    estDay = dd.toLocaleDateString('en-IN',{weekday:'long'});
+  }catch(e){ estDelivery='4 Days from order'; }
+}
+let deliveryText = estDelivery ? `${estDay}, ${estDelivery}` : '4 Days from order';
+
+h+=`<div class=card>
+<b>${name} - ${phone}</b> <span class="status s-${st.toLowerCase()}">${st.toUpperCase()}</span><br>
+${items}<br><b>₹${o.total}</b><br>
+<div style="background:#fff3cd;padding:6px;border-radius:6px;margin:6px 0;">📍 ${addr}</div>
+<div style="background:#e8f5e9;padding:8px;border-radius:6px;margin:6px 0;text-align:center;border:1px dashed #4caf50;">
+🚚 <b>Expected Delivery:</b><br><span style="font-size:16px;color:#2e7d32;">${deliveryText}</span>
+</div>
+<small>Ordered: ${d}</small><br>
+<label>Update Status:</label>
+<select onchange="updateStatus('${id}','${phone}','${name}','${o.total}','${deliveryText}',this.value)" style="background:#e3f2fd;font-weight:bold">
+<option value="">-- Change Status --</option>
+<option value="Pending">Pending</option>
+<option value="Packed">Packed</option>
+<option value="Shipped">Shipped - Out for Delivery</option>
+<option value="Delivered">Delivered ✅</option>
+<option value="Cancelled">Cancelled ❌</option>
+</select>
+<div style="display:flex;gap:6px;margin-top:6px;">
+<a href="tel:${phone}" style="flex:1;background:#4caf50;color:#fff;text-align:center;padding:8px;border-radius:6px;text-decoration:none;">Call</a>
+<a href="https://wa.me/91${phone.replace(/\D/g,'').slice(-10)}" target="_blank" style="flex:1;background:#25D366;color:#fff;text-align:center;padding:8px;border-radius:6px;text-decoration:none;">WhatsApp</a>
+</div>
+</div>`;
+});
+oc.innerText=count;od.innerHTML=h||"No orders";
+});
+}
+function updateStatus(orderId,phone,name,total,deliveryDate,newStatus){
+if(!newStatus)return;
+if(!confirm(`Change order to ${newStatus}?`))return;
+db.collection("orders").doc(orderId).update({status:newStatus, estimatedDelivery: deliveryDate}).then(()=>{
+let msg=`*Umas.India - Order Update*%0A%0AHi ${name},%0A%0A📦 Order: Rs.${total}%0AStatus: *${newStatus.toUpperCase()}*%0A%0A🚚 *Expected Delivery: ${deliveryDate}*%0A%0A${newStatus=='Pending'?'✅ Your order is CONFIRMED! We will pack it soon.':newStatus=='Packed'?'📦 PACKED! Your order is ready for shipment.':newStatus=='Shipped'?'🚚 OUT FOR DELIVERY! Your order will reach today/tomorrow! Please keep cash ready.':newStatus=='Delivered'?'✅ DELIVERED! Thank you for shopping with Umas.India ❤️ Please share your feedback!':'❌ Cancelled as per your request.'}%0A%0ATrack here: https://umasvara.github.io/Umas-india/%0ACall: 7989333257`;
+window.open(`https://wa.me/91${phone.replace(/\D/g,'').slice(-10)}?text=${msg}`,'_blank');
+alert(`Status changed to ${newStatus}\nDelivery: ${deliveryDate}\nWhatsApp opened!`);
+});
+}
+</script></body></html>
