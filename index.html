@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Umas.India</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <style>
 body{margin:0;font-family:system-ui;background:#fff}
 .header{background:#e91e63;color:#fff;text-align:center;padding:18px 12px;position:sticky;top:0;z-index:10}
@@ -39,49 +41,48 @@ body{margin:0;font-family:system-ui;background:#fff}
 
 <div id="checkoutModal">
 <div class="modalBox">
-<h2 style="margin-top:0;color:#e91e63;">Checkout - Choose Payment</h2>
+<h2 style="margin-top:0;color:#e91e63;">Checkout</h2>
 <button onclick="closeCheckout()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X Close</button>
 <div style="clear:both"></div>
-
 <div id="cartItems"></div>
 <h3>Total: ₹<span id="totalAmt">0</span></h3>
-
 <input id="custName" placeholder="Your Full Name *">
 <input id="custPhone" placeholder="Phone Number *">
 <textarea id="custAddress" placeholder="Full Delivery Address *"></textarea>
-
-<h3>💳 Select Payment Method</h3>
-<label class="payOption" style="background:#e8f5e9;">
-<input type="radio" name="pay" value="cod" checked> <b>🚚 Cash on Delivery</b><br><small>Pay cash when delivery boy comes - Most Popular</small>
-</label>
-
-<label class="payOption" style="background:#e3f2fd;">
-<input type="radio" name="pay" value="upi"> <b>📱 UPI Payment</b><br><small>GPay / PhonePe / Paytm to 7989333257@ybl</small>
-</label>
-
-<label class="payOption" style="background:#fff3e0;">
-<input type="radio" name="pay" value="whatsapp"> <b>💬 Order on WhatsApp</b><br><small>Chat with owner: 7989333257</small>
-</label>
-
+<h3>💳 Payment</h3>
+<label class="payOption" style="background:#e8f5e9;"><input type="radio" name="pay" value="cod" checked> <b>🚚 Cash on Delivery</b></label>
+<label class="payOption" style="background:#e3f2fd;"><input type="radio" name="pay" value="upi"> <b>📱 UPI - 7989333257@ybl</b></label>
+<label class="payOption" style="background:#fff3e0;"><input type="radio" name="pay" value="whatsapp"> <b>💬 WhatsApp Order</b></label>
 <button onclick="placeOrder()" style="width:100%;background:#e91e63;color:#fff;padding:16px;border:none;border-radius:10px;font-size:18px;font-weight:bold;margin-top:15px;">✅ Place My Order</button>
-
 </div>
 </div>
 
 <script>
-let products=JSON.parse(localStorage.getItem('umas_products')||'[]');
+const firebaseConfig={apiKey:"AIzaSyA2CKqJnhdVijyCmrJPrxP21fVhIQI9LWk",authDomain:"umasindia-4cd69.firebaseapp.com",projectId:"umasindia-4cd69",storageBucket:"umasindia-4cd69.firebasestorage.app",messagingSenderId:"441625672930",appId:"1:441625672930:web:0e80f6a292950d6dbd72bb"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+
+let products=[];
+let cart=JSON.parse(localStorage.getItem('umas_cart')||'[]');
+
+function loadProducts(){
+db.collection("products").orderBy("date","desc").onSnapshot(s=>{
+products=[];
+s.forEach(doc=>{products.push({...doc.data(), id:doc.id})});
 if(products.length===0){
 products=[
-{name:"Kanchi blue",price:100,mrp:108,cat:"Sarees",img:"https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500"},
-{name:"Mens cotton shirt",price:108,mrp:200,cat:"Menswear",img:"https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500"}
+{name:"Kanchi blue",price:100,mrp:108,category:"Sarees",image:"https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500"},
+{name:"Mens cotton shirt",price:108,mrp:200,category:"Menswear",image:"https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500"}
 ];
 }
-let cart=JSON.parse(localStorage.getItem('umas_cart')||'[]');
+render();
+});
+}
 
 function render(){
 let html='';
 products.forEach((p,i)=>{
-html+=`<div class="card"><img src="${p.img}"><div class="card-body"><b>${p.name}</b><br>₹${p.price} <s>₹${p.mrp}</s><br><small>${p.cat}</small><br><button class="buy" onclick="addToCart(${i})">Add to Cart</button></div></div>`;
+html+=`<div class="card"><img src="${p.image||p.img}"><div class="card-body"><b>${p.name}</b><br>₹${p.price} <s>₹${p.mrp||''}</s><br><small>${p.category||p.cat||''}</small><br><button class="buy" onclick="addToCart(${i})">Add to Cart</button></div></div>`;
 });
 document.getElementById('products').innerHTML=html;
 updateCartCount();
@@ -91,124 +92,69 @@ function addToCart(index){
 let p=products[index];
 let existing=cart.find(c=>c.name===p.name);
 if(existing) existing.qty++;
-else cart.push({...p,qty:1});
+else cart.push({name:p.name,price:p.price,qty:1,image:p.image||p.img});
 localStorage.setItem('umas_cart',JSON.stringify(cart));
 updateCartCount();
-alert(p.name+" Added to Cart!");
+alert(p.name+" Added!");
 }
-
 function updateCartCount(){
-let count=cart.reduce((s,c)=>s+c.qty,0);
-document.getElementById('cartCount').innerText=count;
+document.getElementById('cartCount').innerText=cart.reduce((s,c)=>s+c.qty,0);
 }
-
 function openCheckout(){
-if(cart.length===0){ alert("Cart is empty! Add products first"); return; }
+if(cart.length===0){alert("Cart empty");return;}
 renderCheckoutItems();
 document.getElementById('checkoutModal').style.display='block';
 }
-
 function renderCheckoutItems(){
-let html='';
-let total=0;
+let html='';let total=0;
 cart.forEach((c,idx)=>{
-let t=c.price*c.qty;
-total+=t;
-html+=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;">
-<div><b>${c.name}</b><br><button class="qtyBtn" onclick="changeQty(${idx},-1)">-</button> <span style="margin:0 6px;">${c.qty}</span> <button class="qtyBtn" onclick="changeQty(${idx},1)">+</button> <span style="margin-left:8px;">₹${t}</span></div>
-<button class="removeBtn" onclick="removeItem(${idx})">Remove</button>
-</div>`;
+let t=c.price*c.qty;total+=t;
+html+=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;"><div><b>${c.name}</b><br><button class="qtyBtn" onclick="changeQty(${idx},-1)">-</button> ${c.qty} <button class="qtyBtn" onclick="changeQty(${idx},1)">+</button> ₹${t}</div><button class="removeBtn" onclick="removeItem(${idx})">Remove</button></div>`;
 });
 document.getElementById('cartItems').innerHTML=html;
 document.getElementById('totalAmt').innerText=total;
 }
-
-function changeQty(index,delta){
-cart[index].qty+=delta;
-if(cart[index].qty<=0){
-cart.splice(index,1);
-}
+function changeQty(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);saveCart();}
+function removeItem(i){cart.splice(i,1);saveCart();}
+function saveCart(){
 localStorage.setItem('umas_cart',JSON.stringify(cart));
-if(cart.length===0){closeCheckout(); render(); return;}
-renderCheckoutItems();
-updateCartCount();
+if(cart.length===0){closeCheckout();render();return;}
+renderCheckoutItems();updateCartCount();
 }
-
-function removeItem(index){
-cart.splice(index,1);
-localStorage.setItem('umas_cart',JSON.stringify(cart));
-if(cart.length===0){closeCheckout(); render(); return;}
-renderCheckoutItems();
-updateCartCount();
-}
-
-function closeCheckout(){
-document.getElementById('checkoutModal').style.display='none';
-}
+function closeCheckout(){document.getElementById('checkoutModal').style.display='none';}
 
 function placeOrder(){
 const method=document.querySelector('input[name="pay"]:checked').value;
 const name=document.getElementById('custName').value.trim();
 const phone=document.getElementById('custPhone').value.trim();
 const address=document.getElementById('custAddress').value.trim();
-if(!name||!phone||!address){ alert("Please fill Name, Phone, Address"); return; }
-
+if(!name||!phone||!address){alert("Fill all fields");return;}
 let total=cart.reduce((s,c)=>s+c.price*c.qty,0);
-const UPI_ID="7989333257@ybl";
-const WA_NUMBER="917989333257";
-
+const orderData={
+items:cart,total:total,method:method,
+customer:{name:name,phone:phone,address:address},
+status: method==='cod' ? 'COD Pending' : method,
+date: firebase.firestore.FieldValue.serverTimestamp(),
+localDate: new Date().toLocaleString()
+};
+db.collection("orders").add(orderData).then(()=>{
 let orders=JSON.parse(localStorage.getItem('umas_orders')||'[]');
-orders.push({id:Date.now(),items:[...cart],total,method,customer:{name,phone,address},date:new Date().toLocaleString()});
-localStorage.setItem('umas_orders',JSON.stringify(orders));
-
-if(method==='cod'){
-alert("✅ COD Order Placed!\nName: "+name+"\nTotal: Rs."+total+"\nWe will call you: "+phone);
-finishOrder();
-}
-else if(method==='upi'){
-let upiLink=`upi://pay?pa=${UPI_ID}&pn=Umas.India&am=${total}&cu=INR&tn=Order ${name}`;
-window.location.href=upiLink;
-setTimeout(()=>{
-alert("UPI: Pay Rs."+total+" to "+UPI_ID+" \nAfter payment send screenshot to 7989333257");
-finishOrder();
-},2000);
-}
-else if(method==='whatsapp'){
-let msg=`*New Order - Umas.India*%0A%0A`;
-cart.forEach(c=>{msg+=`${c.name} x${c.qty} - Rs.${c.price*c.qty}%0A`;});
-msg+=`%0ATotal: Rs.${total}%0AName: ${name}%0APhone: ${phone}%0AAddress: ${address}%0APayment: WhatsApp`;
-window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, '_blank');
-finishOrder();
-}
+orders.push(orderData);localStorage.setItem('umas_orders',JSON.stringify(orders));
+if(method==='cod'){alert("✅ COD Order Placed! Total ₹"+total);}
+else if(method==='upi'){let link=`upi://pay?pa=7989333257@ybl&pn=Umas.India&am=${total}&cu=INR`;window.location.href=link;setTimeout(()=>alert("Pay ₹"+total+" to 7989333257@ybl"),1500);}
+else if(method==='whatsapp'){let msg=`*New Order*%0A`;cart.forEach(c=>msg+=`${c.name} x${c.qty}%0A`);msg+=`Total ₹${total}%0A${name} ${phone}`;window.open(`https://wa.me/917989333257?text=${msg}`,'_blank');}
+cart=[];localStorage.setItem('umas_cart',JSON.stringify(cart));closeCheckout();render();
+document.getElementById('custName').value='';document.getElementById('custPhone').value='';document.getElementById('custAddress').value='';
+}).catch(e=>{alert("Error: "+e.message);});
 }
 
-function finishOrder(){
-cart=[]; 
-localStorage.setItem('umas_cart',JSON.stringify(cart));
-closeCheckout(); 
-render();
-document.getElementById('custName').value='';
-document.getElementById('custPhone').value='';
-document.getElementById('custAddress').value='';
-}
-
-render();
-
+loadProducts();
 let taps=0;
 document.getElementById('mainTitle').addEventListener('click',function(){
-taps++;
-if(taps>=3){
-document.getElementById('secretAdminBtn').style.display='inline-block';
-setTimeout(()=>{document.getElementById('secretAdminBtn').style.display='none';taps=0;},10000);
-taps=0;
-}
+taps++;if(taps>=3){document.getElementById('secretAdminBtn').style.display='inline-block';setTimeout(()=>{document.getElementById('secretAdminBtn').style.display='none';taps=0;},10000);taps=0;}
 setTimeout(()=>{taps=0;},2000);
 });
-function checkAdmin(){
-let p=prompt("Enter Admin Password:");
-if(p==="Business@1008"){window.location.href="admin.html";}
-else if(p!==null){alert("Wrong Password!");document.getElementById('secretAdminBtn').style.display='none';}
-}
+function checkAdmin(){let p=prompt("Admin Password:");if(p==="Business@1008"||p==="umas2024"){window.location.href="admin.html";}else if(p!==null){alert("Wrong");}}
 </script>
 </body>
 </html>
