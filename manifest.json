@@ -1,22 +1,15 @@
 {
-  "name": "UmasIndia - Sarees & Shirts",
+  "name": "Umas India - Sarees & Clothing",
   "short_name": "UmasIndia",
-  "description": "Buy latest Sarees, Shirts, Dresses online - Order via WhatsApp - Umas India Bangalore",
-  "start_url": "/Umas-india/",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#E91E63",
+  "theme_color": "#e91e63",
   "icons": [
     {
-      "src": "logo.png",
+      "src": "IMG-20261021-WA4957.jpg",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "logo.png",
-      "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     }
   ]
