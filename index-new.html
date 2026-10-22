@@ -1,17 +1,91 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html>
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Umas.India Shop NEW</title>
-<style>body{font-family:system-ui;background:#f5f5f7;margin:0}header{background:#5d2a0a;color:#fff;padding:14px;text-align:center;font-weight:800}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}.card{background:#fff;border-radius:16px;overflow:hidden}.card img.main{width:100%;height:180px;object-fit:cover}.orders{background:#fff;margin:10px;border-radius:16px;padding:12px}.order-item{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:8px 0}.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px}.modal-box{background:#fff;border-radius:16px;max-width:420px;width:100%}</style></head>
-<body><header>Umas.India - NEW</header>
-<div id="ordersBox" class="orders" style="display:none"><h3>My Orders - Buyer can delete</h3><div id="ordersList"></div></div>
+<style>
+body{font-family:system-ui;background:#f5f5f7;margin:0}header{background:#5d2a0a;color:#fff;padding:14px;text-align:center;font-weight:800}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}.card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.card img.main{width:100%;height:180px;object-fit:cover}.info{padding:8px}
+.price{color:#e91e63;font-weight:800}.mrp{color:#888;text-decoration:line-through;font-size:13px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:99;padding:16px}.box{background:#fff;border-radius:16px;max-width:420px;width:100%;max-height:90vh;overflow:auto}
+.m-img{width:100%;height:300px;object-fit:contain;background:#f5f5f5}
+.thumbs{display:flex;gap:6px;padding:10px;overflow:auto}.thumbs img{width:60px;height:60px;border-radius:8px;border:2px solid transparent;cursor:pointer;object-fit:cover}.thumbs img.active{border-color:#e91e63}
+.orders{background:#fff;margin:10px;border-radius:14px;padding:12px}
+.order{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee}
+.order button{background:#222;color:#fff;border:0;padding:6px 12px;border-radius:7px}
+</style>
+</head>
+<body>
+<header>Umas.India - NEW Shop</header>
+
+<div id="ordersBox" class="orders" style="display:none">
+<h3 style="margin:0 0 8px">My Orders - You can Delete</h3>
+<div id="ordersList"></div>
+</div>
+
 <div id="grid" class="grid"></div>
-<div id="modal" class="modal" onclick="if(event.target.id==='modal')this.style.display='none'"><div class="modal-box"><img id="mImg" style="width:100%;height:300px;object-fit:contain;background:#f5f5f5" src=""><div id="mThumbs" style="display:flex;gap:6px;padding:10px"></div><div id="mVideo" style="padding:10px"></div><div style="padding:12px"><h3 id="mName"></h3><div><b id="mPrice"></b> <s id="mMrp"></s></div><button onclick="placeOrder()" style="width:100%;padding:12px;background:#e91e63;color:#fff;border:0;border-radius:10px;font-weight:700;margin-top:10px">Buy Now</button><button onclick="document.getElementById('modal').style.display='none'" style="width:100%;padding:12px;background:#eee;border:0;border-radius:10px;margin-top:6px">Close</button></div></div></div>
+
+<div id="modal" class="modal" onclick="if(event.target.id==='modal')this.style.display='none'">
+<div class="box">
+<img id="mImg" class="m-img" src="">
+<div id="mThumbs" class="thumbs"></div>
+<div id="mVideo" style="padding:10px"></div>
+<div style="padding:12px">
+<h3 id="mName" style="margin:0"></h3>
+<div><span class="price" id="mPrice"></span> <span class="mrp" id="mMrp"></span> <span style="background:#e91e63;color:#fff;padding:2px 6px;border-radius:6px;font-size:12px" id="mDisc"></span></div>
+<button onclick="placeOrder()" style="width:100%;padding:13px;background:#e91e63;color:#fff;border:0;border-radius:10px;font-weight:800;margin-top:10px">Buy Now / Place Order</button>
+<button onclick="modal.style.display='none'" style="width:100%;padding:12px;background:#eee;border:0;border-radius:10px;margin-top:8px">Close</button>
+</div>
+</div>
+</div>
+
 <script>
-let products=JSON.parse(localStorage.getItem('umas_products')||'[]'),orders=JSON.parse(localStorage.getItem('umas_orders')||'[]'),current=null;
-function renderProducts(){grid.innerHTML=products.map((p,i)=>`<div class="card" onclick="openProduct(${i})"><img class="main" src="${p.images[0]}"><div style="padding:10px"><div style="font-weight:700">${p.name}</div><div>₹${p.price}</div></div></div>`).join('');}
-function openProduct(i){current=products[i];modal.style.display='flex';mName.textContent=current.name;mPrice.textContent='₹'+current.price;mMrp.textContent=current.mrp!=current.price?'₹'+current.mrp:'';mImg.src=current.images[0];mThumbs.innerHTML=current.images.map(im=>`<img src="${im}" style="width:60px;height:60px;border-radius:8px;object-fit:cover;cursor:pointer" onclick="mImg.src=this.src">`).join('');let v=current.video||'',vh='';if(v){if(v.includes('youtube')||v.includes('youtu.be')){let id=v.split('v=')[1]?.split('&')[0]||v.split('/').pop();vh=`<iframe height="200" width="100%" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen></iframe>`;}else{vh=`<video controls width="100%" src="${v}"></video>`;}}mVideo.innerHTML=vh?'<b>Video</b>'+vh:'';}
-function placeOrder(){orders.unshift({id:Date.now(),name:current.name,price:current.price,image:current.images[0],date:new Date().toLocaleString()});localStorage.setItem('umas_orders',JSON.stringify(orders));renderOrders();modal.style.display='none';alert('Order Placed!');}
-function deleteOrder(id){if(confirm('Delete order?')){orders=orders.filter(o=>o.id!==id);localStorage.setItem('umas_orders',JSON.stringify(orders));renderOrders();}}
-function renderOrders(){if(!orders.length){ordersBox.style.display='none';return;}ordersBox.style.display='block';ordersList.innerHTML=orders.map(o=>`<div class="order-item"><div style="display:flex;gap:8px"><img src="${o.image}" style="width:40px;height:40px;border-radius:6px;object-fit:cover"><div><div style="font-weight:700">${o.name}</div><div style="font-size:12px">${o.date} ₹${o.price}</div></div></div><button onclick="deleteOrder(${o.id})" style="background:#222;color:#fff;border:0;padding:6px 12px;border-radius:8px">Delete</button></div>`).join('');}
-renderProducts();renderOrders();
-</script></body></html>
+let products=JSON.parse(localStorage.getItem('umas_products')||'[]');
+let orders=JSON.parse(localStorage.getItem('umas_orders')||'[]');
+let cur=null;
+
+function renderProducts(){
+ grid.innerHTML=products.map((p,i)=>`
+ <div class="card" onclick="openP(${i})">
+   <img class="main" src="${p.images[0]}">
+   <div class="info">
+     <div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+     <div><span class="price">₹${p.price}</span> <span class="mrp">${p.mrp!=p.price?'₹'+p.mrp:''}</span></div>
+     <div style="font-size:11px;color:#666">Our Price vs MRP</div>
+   </div>
+ </div>`).join('');
+}
+function openP(i){
+ cur=products[i]; modal.style.display='flex';
+ mName.textContent=cur.name; mPrice.textContent='Our Price ₹'+cur.price; mMrp.textContent=cur.mrp!=cur.price?'MRP ₹'+cur.mrp:'';
+ let disc = cur.mrp>cur.price?Math.round((cur.mrp-cur.price)/cur.mrp*100):0;
+ mDisc.textContent=disc?disc+'% OFF':'';
+ mImg.src=cur.images[0];
+ mThumbs.innerHTML=cur.images.map((im,j)=>`<img src="${im}" class="${j==0?'active':''}" onclick="mImg.src=this.src;document.querySelectorAll('#mThumbs img').forEach(x=>x.classList.remove('active'));this.classList.add('active')">`).join('');
+ let v=cur.video||'', vh='';
+ if(v){
+  if(v.includes('youtu')){let id=v.split('v=')[1]?.split('&')[0]||v.split('/').pop().split('?')[0]; vh=`<iframe height="220" width="100%" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen style="border-radius:10px"></iframe>`;}
+  else{vh=`<video controls width="100%" src="${v}" style="border-radius:10px"></video>`;}
+ }
+ mVideo.innerHTML=vh?'<b>Product Video</b>'+vh:'';
+}
+function placeOrder(){
+ orders.unshift({id:Date.now(),name:cur.name,price:cur.price,mrp:cur.mrp,image:cur.images[0],date:new Date().toLocaleString()});
+ localStorage.setItem('umas_orders',JSON.stringify(orders));
+ renderOrders(); modal.style.display='none'; alert('Order Placed! You can delete in My Orders');
+}
+function deleteOrder(id){if(confirm('Delete this order?')){orders=orders.filter(o=>o.id!==id); localStorage.setItem('umas_orders',JSON.stringify(orders)); renderOrders();}}
+function renderOrders(){
+ if(!orders.length){ordersBox.style.display='none';return;}
+ ordersBox.style.display='block';
+ ordersList.innerHTML=orders.map(o=>`
+ <div class="order">
+  <div style="display:flex;gap:8px;align-items:center"><img src="${o.image}" style="width:44px;height:44px;border-radius:7px;object-fit:cover"><div><div style="font-weight:700">${o.name}</div><div style="font-size:12px;color:#555">Our Price ₹${o.price} <s>₹${o.mrp}</s> - ${o.date}</div></div></div>
+  <button onclick="deleteOrder(${o.id})">Delete</button>
+ </div>`).join('');
+}
+renderProducts(); renderOrders();
+</script>
+</body>
+</html>
