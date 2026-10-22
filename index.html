@@ -1,20 +1,121 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Umas Shop</title>
-<style>body{font-family:system-ui;background:#f5f5f7;margin:0}header{background:#5d2a0a;color:#fff;padding:14px;text-align:center;font-weight:800}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}.card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.06);cursor:pointer}.card img.main{width:100%;height:180px;object-fit:cover}.info{padding:8px}.price{color:#e91e63;font-weight:800}.mrp{color:#888;text-decoration:line-through;font-size:12px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:99;padding:16px}.box{background:#fff;border-radius:16px;max-width:420px;width:100%;max-height:90vh;overflow:auto}.m-img{width:100%;height:300px;object-fit:contain;background:#f5f5f5}.thumbs{display:flex;gap:6px;padding:10px;overflow:auto}.thumbs img{width:58px;height:58px;border-radius:8px;border:2px solid transparent;object-fit:cover}.thumbs img.active{border-color:#e91e63}</style></head>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Umas.India</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#e91e63">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3081/3081840.png">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<style>
+body{margin:0;font-family:system-ui;background:#fff}
+.header{background:#e91e63;color:#fff;text-align:center;padding:18px 12px;position:sticky;top:0;z-index:10}
+.header h1{margin:0;font-size:28px;cursor:pointer;user-select:none}
+.header p{margin:6px 0 0;font-size:13px;line-height:1.4}
+#secretAdminBtn{display:none;background:#000;color:#fff;border:none;padding:8px 22px;border-radius:20px;margin-top:10px;font-weight:bold}
+#cartBtn{position:fixed;bottom:20px;right:20px;background:#e91e63;color:#fff;border:none;padding:15px 20px;border-radius:50px;font-weight:bold;box-shadow:0 4px 15px rgba(0,0,0,.3);z-index:20}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px;padding-bottom:80px}
+.card{border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.12);background:#fff}
+.card img{width:100%;height:200px;object-fit:cover}
+.card-body{padding:10px}
+.buy{background:#e91e63;color:#fff;border:none;width:100%;padding:10px;border-radius:8px;font-weight:bold;margin-top:6px;cursor:pointer}
+#checkoutModal,#trackModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:30;overflow-y:auto}
+.modalBox{background:#fff;max-width:450px;margin:20px auto;padding:20px;border-radius:15px}
+.modalBox input, .modalBox textarea{width:92%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:8px}
+.payOption{display:block;padding:12px;margin:8px 0;border-radius:10px;border:2px solid #ddd;cursor:pointer}
+.payOption:has(input:checked){border-color:#e91e63;background:#fce4ec}
+.qtyBtn{border:1px solid #ccc;background:#fff;padding:2px 8px;border-radius:4px;cursor:pointer;font-weight:bold}
+.removeBtn{background:#ff1744;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px}
+.trackBtn{background:#fff;color:#e91e63;border:none;padding:7px 16px;border-radius:20px;font-weight:bold;margin-top:10px;cursor:pointer}
+</style>
+</head>
 <body>
-<header>Umas.India Shop</header>
-<div id="ordersBox" style="background:#fff;margin:10px;border-radius:12px;padding:12px;display:none"><h3 style="margin:0 0 8px">My Orders - You can Delete</h3><div id="ordersList"></div></div>
-<div id="grid" class="grid"></div>
-<div id="modal" class="modal" onclick="if(event.target.id==='modal')this.style.display='none'"><div class="box"><img id="mImg" class="m-img"><div id="mThumbs" class="thumbs"></div><div id="mVideo" style="padding:10px"></div><div style="padding:12px"><h3 id="mName" style="margin:0"></h3><div><span class="price" id="mPrice"></span> <span class="mrp" id="mMrp"></span> <span id="mDisc" style="background:#e91e63;color:#fff;padding:2px 6px;border-radius:5px;font-size:11px"></span></div><div style="font-size:11px;color:#666">Our Price vs MRP</div><button onclick="placeOrder()" style="width:100%;padding:13px;background:#e91e63;color:#fff;border:0;border-radius:10px;font-weight:800;margin-top:10px">Buy Now</button><button onclick="modal.style.display='none'" style="width:100%;padding:12px;background:#eee;border:0;border-radius:10px;margin-top:8px">Close</button></div></div></div>
+<div class="header">
+<h1 id="mainTitle">Umas.India</h1>
+<p>Owner: Umasvara | 7989333257<br>UPI: 7989333257@ybl</p>
+<button class="trackBtn" onclick="openTrack()">📦 Track My Order</button>
+<button id="secretAdminBtn" onclick="checkAdmin()">Admin</button>
+</div>
+<div id="products" class="grid"></div>
+<button id="cartBtn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
+<div id="checkoutModal"><div class="modalBox">
+<h2 style="margin-top:0;color:#e91e63;">Checkout</h2>
+<button onclick="closeCheckout()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X</button>
+<div style="clear:both"></div>
+<div id="cartItems"></div>
+<h3>Total: ₹<span id="totalAmt">0</span></h3>
+<input id="custName" placeholder="Your Full Name *">
+<input id="custPhone" placeholder="Phone Number *">
+<textarea id="custAddress" placeholder="Full Delivery Address *"></textarea>
+<h3>💳 Payment</h3>
+<label class="payOption" style="background:#e8f5e9;"><input type="radio" name="pay" value="cod" checked> <b>🚚 COD - Delivery in 4 Days</b></label>
+<label class="payOption" style="background:#e3f2fd;"><input type="radio" name="pay" value="upi"> <b>📱 UPI - 7989333257@ybl</b></label>
+<label class="payOption" style="background:#fff3e0;"><input type="radio" name="pay" value="whatsapp"> <b>💬 WhatsApp Order</b></label>
+<button onclick="placeOrder()" style="width:100%;background:#e91e63;color:#fff;padding:16px;border:none;border-radius:10px;font-size:18px;font-weight:bold;margin-top:15px;">✅ Place My Order</button>
+</div></div>
+<div id="trackModal"><div class="modalBox">
+<h2 style="color:#e91e63;margin-top:0;">📦 Track Your Orders</h2>
+<button onclick="closeTrack()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X</button>
+<div style="clear:both"></div>
+<input id="trackPhone" placeholder="Enter Phone e.g. 90******11">
+<button onclick="trackOrders()" style="width:100%;background:#4caf50;color:#fff;padding:12px;border:none;border-radius:8px;font-weight:bold;margin-top:8px;">🔍 Check Status</button>
+<div id="trackResult" style="margin-top:15px;"></div>
+</div></div>
 <script>
-let products=[]; try{products=JSON.parse(localStorage.getItem('products')||localStorage.getItem('umas_products')||'[]')}catch(e){}
-let orders=[]; try{orders=JSON.parse(localStorage.getItem('umas_orders')||'[]')}catch(e){}
-let cur=null;
-function renderProducts(){grid.innerHTML=products.map((p,i)=>`<div class="card" onclick="openP(${i})"><img class="main" src="${p.images? p.images[0]:p.image}"><div class="info"><div style="font-weight:700">${p.name}</div><div><span class="price">₹${p.price}</span> <span class="mrp">₹${p.mrp||p.price}</span></div><div style="font-size:11px;color:#666">Our Price vs MRP</div></div></div>`).join('');}
-function openP(i){cur=products[i]; modal.style.display='flex'; mName.textContent=cur.name; mPrice.textContent='Our Price ₹'+cur.price; mMrp.textContent='MRP ₹'+(cur.mrp||cur.price); let disc=cur.mrp>cur.price?Math.round((cur.mrp-cur.price)/cur.mrp*100):0; mDisc.textContent=disc?disc+'% OFF':''; let imgs=cur.images||[cur.image]; mImg.src=imgs[0]; mThumbs.innerHTML=imgs.map((im,j)=>`<img src="${im}" class="${j==0?'active':''}" onclick="mImg.src=this.src;document.querySelectorAll('#mThumbs img').forEach(x=>x.classList.remove('active'));this.classList.add('active')">`).join(''); let v=cur.video||'',vh=''; if(v){if(v.includes('youtu')){let id=v.split('v=')[1]?.split('&')[0]||v.split('/').pop().split('?')[0]; vh=`<iframe height="210" width="100%" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen style="border-radius:10px"></iframe>`;} else{vh=`<video controls width="100%" src="${v}" style="border-radius:10px"></video>`;}} mVideo.innerHTML=vh?'<b>Product Video</b>'+vh:''; }
-function placeOrder(){let img=(cur.images?cur.images[0]:cur.image); orders.unshift({id:Date.now(),name:cur.name,price:cur.price,mrp:cur.mrp||cur.price,image:img,date:new Date().toLocaleString()}); localStorage.setItem('umas_orders',JSON.stringify(orders)); renderOrders(); modal.style.display='none'; alert('Order Placed! Check My Orders to delete');}
-function deleteOrder(id){if(confirm('Delete order?')){orders=orders.filter(o=>o.id!==id); localStorage.setItem('umas_orders',JSON.stringify(orders)); renderOrders();}}
-function renderOrders(){if(!orders.length){ordersBox.style.display='none';return;} ordersBox.style.display='block'; ordersList.innerHTML=orders.map(o=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee"><div style="display:flex;gap:8px"><img src="${o.image}" style="width:40px;height:40px;border-radius:6px;object-fit:cover"><div><div style="font-weight:700">${o.name}</div><div style="font-size:11px">Our ₹${o.price} MRP ₹${o.mrp} - ${o.date}</div></div></div><button onclick="deleteOrder(${o.id})" style="background:#222;color:#fff;border:0;padding:6px 12px;border-radius:7px">Delete</button></div>`).join('');}
-renderProducts(); renderOrders();
+const firebaseConfig={apiKey:"AIzaSyA2CKqJnhdVijyCmrJPrxP21fVhIQI9LWk",authDomain:"umasindia-4cd69.firebaseapp.com",projectId:"umasindia-4cd69",storageBucket:"umasindia-4cd69.firebasestorage.app",messagingSenderId:"441625672930",appId:"1:441625672930:web:0e80f6a292950d6dbd72bb"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+let products=[];let cart=JSON.parse(localStorage.getItem('umas_cart')||'[]');
+function loadProducts(){db.collection("products").orderBy("date","desc").onSnapshot(s=>{products=[];s.forEach(doc=>{products.push({...doc.data(), id:doc.id})});render();});}
+function render(){let html='';products.forEach((p,i)=>{html+=`<div class="card"><img src="${p.image||p.img}"><div class="card-body"><b>${p.name}</b><br>₹${p.price} <s>₹${p.mrp||''}</s><br><small>${p.category||''}</small><br><button class="buy" onclick="addToCart(${i})">Add to Cart</button></div></div>`;});document.getElementById('products').innerHTML=html;updateCartCount();}
+function addToCart(i){let p=products[i];let e=cart.find(c=>c.name===p.name);if(e)e.qty++;else cart.push({name:p.name,price:p.price,qty:1});localStorage.setItem('umas_cart',JSON.stringify(cart));updateCartCount();alert(p.name+" Added!");}
+function updateCartCount(){document.getElementById('cartCount').innerText=cart.reduce((s,c)=>s+c.qty,0);}
+function openCheckout(){if(cart.length===0){alert("Cart empty");return;}renderCheckoutItems();document.getElementById('checkoutModal').style.display='block';}
+function renderCheckoutItems(){let html='';let total=0;cart.forEach((c,idx)=>{let t=c.price*c.qty;total+=t;html+=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;"><div><b>${c.name}</b><br><button class="qtyBtn" onclick="changeQty(${idx},-1)">-</button> ${c.qty} <button class="qtyBtn" onclick="changeQty(${idx},1)">+</button> ₹${t}</div><button class="removeBtn" onclick="removeItem(${idx})">Remove</button></div>`;});document.getElementById('cartItems').innerHTML=html;document.getElementById('totalAmt').innerText=total;}
+function changeQty(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);saveCart();}
+function removeItem(i){cart.splice(i,1);saveCart();}
+function saveCart(){localStorage.setItem('umas_cart',JSON.stringify(cart));if(cart.length===0){closeCheckout();render();return;}renderCheckoutItems();updateCartCount();}
+function closeCheckout(){document.getElementById('checkoutModal').style.display='none';}
+function placeOrder(){
+const method=document.querySelector('input[name="pay"]:checked').value;
+const name=document.getElementById('custName').value.trim();
+const phone=document.getElementById('custPhone').value.trim();
+const address=document.getElementById('custAddress').value.trim();
+if(!name||!phone||!address){alert("Fill all fields");return;}
+let total=cart.reduce((s,c)=>s+c.price*c.qty,0);
+let deliveryDate = new Date(); deliveryDate.setDate(deliveryDate.getDate()+4);
+let deliveryDateStr = deliveryDate.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+let deliveryDay = deliveryDate.toLocaleDateString('en-IN',{weekday:'long'});
+const orderData={items:cart,total:total,method:method,customer:{name:name,phone:phone,address:address},status:"Pending",estimatedDelivery:deliveryDateStr,estimatedDeliveryDay:deliveryDay,date:firebase.firestore.FieldValue.serverTimestamp(),localDate:new Date().toLocaleString()};
+db.collection("orders").add(orderData).then(()=>{alert("✅ Order Placed!\n🚚 Delivery by: "+deliveryDay+", "+deliveryDateStr);cart=[];localStorage.setItem('umas_cart',JSON.stringify(cart));closeCheckout();render();});
+}
+function openTrack(){document.getElementById('trackModal').style.display='block';}
+function closeTrack(){document.getElementById('trackModal').style.display='none';}
+function trackOrders(){
+let phone=document.getElementById('trackPhone').value.trim();if(!phone){alert("Enter phone");return;}
+document.getElementById('trackResult').innerHTML="Searching...";
+db.collection("orders").where("customer.phone","==",phone).get().then(s=>{
+if(s.empty){document.getElementById('trackResult').innerHTML=`<div style="background:#f8d7da;padding:12px;border-radius:8px;">No orders for ${phone}</div>`;return;}
+let h="";s.forEach(doc=>{
+let o=doc.data();let status=o.status||"Pending";let steps=["Pending","Packed","Shipped","Delivered"];let currentIndex=steps.indexOf(status);if(currentIndex==-1)currentIndex=0;
+let progress=`<div style="display:flex;justify-content:space-between;margin:12px 0;">`;steps.forEach((st,i)=>{
+let active=i<=currentIndex?"background:#e91e63;color:#fff;border:2px solid #e91e63;":"background:#eee;color:#888;border:2px solid #ddd;";let icon=i<=currentIndex?"✓":"○";
+progress+=`<div style="text-align:center;flex:1;"><div style="${active}width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:14px;font-weight:bold;">${icon}</div><small style="font-size:10px;display:block;margin-top:4px;font-weight:${i<=currentIndex?'bold':'normal'}">${st}</small></div>`;
+if(i<steps.length-1){let lineColor=i<currentIndex?"#e91e63":"#ddd";progress+=`<div style="flex:1;height:3px;background:${lineColor};margin-top:13px;"></div>`;}
+});progress+=`</div>`;
+let items=(o.items||[]).map(i=>`${i.name} x${i.qty}`).join(', ');let est=o.estimatedDelivery?`${o.estimatedDeliveryDay||''}, ${o.estimatedDelivery}`:'4-5 Days';
+h+=`<div style="background:#fff;padding:14px;border-radius:12px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,.12);border-left:5px solid #e91e63;">${progress}<b>${items}</b><br>₹${o.total} - <b style="color:#e91e63;">${status}</b><br><div style="background:#e8f5e9;padding:10px;border-radius:8px;margin:10px 0;text-align:center;border:1px dashed #4caf50;">🚚 <b>Delivery by</b><br><span style="font-size:18px;color:#2e7d32;font-weight:bold;">${est}</span><br><small>${o.localDate||''}</small></div></div>`;
+});document.getElementById('trackResult').innerHTML=h;
+});
+}
+loadProducts();
+let taps=0;document.getElementById('mainTitle').addEventListener('click',function(){taps++;if(taps>=3){document.getElementById('secretAdminBtn').style.display='inline-block';setTimeout(()=>{document.getElementById('secretAdminBtn').style.display='none';taps=0;},10000);taps=0;}setTimeout(()=>{taps=0;},2000);});
+function checkAdmin(){let p=prompt("Admin Password:");if(p==="Business@1008"||p==="umas2024"){window.location.href="admin.html";}else if(p!==null){alert("Wrong");}}
 </script>
-</body></html>
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
+</script>
+</body>
+  </html>
