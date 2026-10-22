@@ -1,139 +1,20 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Umas.India Shop</title>
-<style>
-body{font-family:system-ui;background:#f5f5f7;margin:0}header{background:#5d2a0a;color:#fff;padding:14px;text-align:center;font-weight:800}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}.card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.06);cursor:pointer}
-.card img.main{width:100%;height:190px;object-fit:cover}.info{padding:8px}
-.price{color:#e91e63;font-weight:800;font-size:15px}.mrp{color:#888;text-decoration:line-through;font-size:13px}
-.orders{background:#fff;margin:10px;border-radius:14px;padding:12px}.order{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee}
-.order button{background:#222;color:#fff;border:0;padding:6px 12px;border-radius:7px}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:99;padding:16px}.box{background:#fff;border-radius:16px;max-width:420px;width:100%;max-height:92vh;overflow:auto}
-.m-img{width:100%;height:300px;object-fit:contain;background:#f5f5f5}
-.thumbs{display:flex;gap:6px;padding:10px;overflow:auto}.thumbs img{width:60px;height:60px;border-radius:8px;border:2px solid transparent;cursor:pointer;object-fit:cover}.thumbs img.active{border-color:#e91e63}
-</style>
-</head>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Shop NEW</title>
+<style>body{font-family:system-ui;background:#f5f5f7;margin:0}header{background:#5d2a0a;color:#fff;padding:14px;text-align:center;font-weight:800}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}.card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.06)}.card img.main{width:100%;height:180px;object-fit:cover}.info{padding:8px}.price{color:#e91e63;font-weight:800}.mrp{color:#888;text-decoration:line-through;font-size:12px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:99;padding:16px}.box{background:#fff;border-radius:16px;max-width:420px;width:100%}.m-img{width:100%;height:300px;object-fit:contain;background:#f5f5f5}.thumbs{display:flex;gap:6px;padding:10px;overflow:auto}.thumbs img{width:58px;height:58px;border-radius:8px;border:2px solid transparent;object-fit:cover}.thumbs img.active{border-color:#e91e63}</style></head>
 <body>
 <header>Umas.India - NEW Shop</header>
-
-<div id="ordersBox" class="orders" style="display:none">
-<h3 style="margin:0 0 8px">My Orders - You can Delete</h3>
-<div id="ordersList"></div>
-</div>
-
+<div id="ordersBox" style="background:#fff;margin:10px;border-radius:12px;padding:12px;display:none"><h3 style="margin:0 0 8px">My Orders - You can Delete</h3><div id="ordersList"></div></div>
 <div id="grid" class="grid"></div>
-<div id="empty" style="text-align:center;padding:40px;display:none;color:#666">No products yet.<br>Open Admin -> Import Old Products</div>
-
-<div id="modal" class="modal" onclick="if(event.target.id==='modal')this.style.display='none'">
-<div class="box">
-<img id="mImg" class="m-img" src="">
-<div id="mThumbs" class="thumbs"></div>
-<div id="mVideo" style="padding:10px"></div>
-<div style="padding:12px">
-<h3 id="mName" style="margin:0"></h3>
-<div><span class="price" id="mPrice"></span> <span class="mrp" id="mMrp"></span> <span id="mDisc" style="background:#e91e63;color:#fff;padding:2px 6px;border-radius:6px;font-size:12px"></span></div>
-<div style="margin-top:4px;font-size:12px;color:#666">Our Price vs MRP</div>
-<button onclick="placeOrder()" style="width:100%;padding:13px;background:#e91e63;color:#fff;border:0;border-radius:10px;font-weight:800;margin-top:10px">Buy Now / Place Order</button>
-<button onclick="modal.style.display='none'" style="width:100%;padding:12px;background:#eee;border:0;border-radius:10px;margin-top:8px">Close</button>
-</div>
-</div>
-</div>
-
+<div id="modal" class="modal" onclick="if(event.target.id==='modal')this.style.display='none'"><div class="box"><img id="mImg" class="m-img"><div id="mThumbs" class="thumbs"></div><div id="mVideo" style="padding:10px"></div><div style="padding:12px"><h3 id="mName" style="margin:0"></h3><div><span class="price" id="mPrice"></span> <span class="mrp" id="mMrp"></span> <span id="mDisc" style="background:#e91e63;color:#fff;padding:2px 6px;border-radius:5px;font-size:11px"></span></div><button onclick="placeOrder()" style="width:100%;padding:13px;background:#e91e63;color:#fff;border:0;border-radius:10px;font-weight:800;margin-top:10px">Buy Now</button><button onclick="modal.style.display='none'" style="width:100%;padding:12px;background:#eee;border:0;border-radius:10px;margin-top:8px">Close</button></div></div></div>
 <script>
-// FIXED: Load from BOTH old and new storage
-function getProducts(){
- let newData = [];
- try{ newData = JSON.parse(localStorage.getItem('umas_products')||'[]'); }catch(e){}
- let oldData = [];
- try{ oldData = JSON.parse(localStorage.getItem('products')||'[]'); }catch(e){}
- let old2 = [];
- try{ old2 = JSON.parse(localStorage.getItem('adminProducts')||'[]'); }catch(e){}
-
- let all = [];
- let map = new Map();
-
- function add(arr){
-   arr.forEach(p=>{
-     let name = p.name;
-     if(!name) return;
-     if(map.has(name)) return;
-     let img = p.images ? p.images[0] : (p.image||'');
-     if(!img) return;
-     let obj = {
-       id: p.id||Date.now()+Math.random(),
-       name: p.name,
-       price: p.price,
-       mrp: p.mrp||p.price,
-       cat: p.cat||'Others',
-       images: p.images||[p.image],
-       video: p.video||''
-     };
-     map.set(name, obj);
-     all.push(obj);
-   });
- }
- add(newData); add(oldData); add(old2);
- 
- // If still empty, show demo from your screenshot so page not blank
- if(all.length===0){
-   all = [
-     {id:1, name:"Mens cotton shirt", price:108, mrp:200, cat:"Menswear", images:["https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500"], video:""},
-     {id:2, name:"Kanchi blue", price:100, mrp:108, cat:"Sarees", images:["https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500"], video:""}
-   ];
- }
- return all;
-}
-
-let products = getProducts();
-let orders = [];
-try{ orders = JSON.parse(localStorage.getItem('umas_orders')||'[]'); }catch(e){}
+let products=[]; try{products=JSON.parse(localStorage.getItem('umas_products')||localStorage.getItem('products')||'[]')}catch(e){}
+let orders=[]; try{orders=JSON.parse(localStorage.getItem('umas_orders')||'[]')}catch(e){}
 let cur=null;
-
-function renderProducts(){
- if(products.length===0){ empty.style.display='block'; grid.innerHTML=''; return; }
- empty.style.display='none';
- grid.innerHTML=products.map((p,i)=>`
- <div class="card" onclick="openP(${i})">
-   <img class="main" src="${p.images[0]}" onerror="this.src='https://via.placeholder.com/300'">
-   <div class="info">
-     <div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
-     <div><span class="price">₹${p.price}</span> <span class="mrp">${p.mrp!=p.price?'₹'+p.mrp:''}</span></div>
-     <div style="font-size:11px;color:#666">${p.cat} - Our Price</div>
-   </div>
- </div>`).join('');
-}
-function openP(i){
- cur=products[i]; modal.style.display='flex';
- mName.textContent=cur.name; mPrice.textContent='Our Price ₹'+cur.price; mMrp.textContent=cur.mrp!=cur.price?'MRP ₹'+cur.mrp:'';
- let disc = cur.mrp>cur.price?Math.round((cur.mrp-cur.price)/cur.mrp*100):0;
- mDisc.textContent=disc?disc+'% OFF':'';
- mImg.src=cur.images[0];
- mThumbs.innerHTML=cur.images.map((im,j)=>`<img src="${im}" class="${j==0?'active':''}" onclick="mImg.src=this.src;document.querySelectorAll('#mThumbs img').forEach(x=>x.classList.remove('active'));this.classList.add('active')" onerror="this.style.display='none'">`).join('');
- let v=cur.video||'', vh='';
- if(v){
-  if(v.includes('youtu')){let id=v.split('v=')[1]?.split('&')[0]||v.split('/').pop().split('?')[0]; vh=`<iframe height="220" width="100%" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen style="border-radius:10px"></iframe>`;}
-  else{vh=`<video controls width="100%" src="${v}" style="border-radius:10px"></video>`;}
- }
- mVideo.innerHTML=vh?'<b>Product Video</b>'+vh:'';
-}
-function placeOrder(){
- orders.unshift({id:Date.now(),name:cur.name,price:cur.price,mrp:cur.mrp,image:cur.images[0],date:new Date().toLocaleString()});
- localStorage.setItem('umas_orders',JSON.stringify(orders));
- renderOrders(); modal.style.display='none'; alert('Order Placed! Check My Orders to delete');
-}
-function deleteOrder(id){if(confirm('Delete this order?')){orders=orders.filter(o=>o.id!==id); localStorage.setItem('umas_orders',JSON.stringify(orders)); renderOrders();}}
-function renderOrders(){
- if(!orders.length){ordersBox.style.display='none';return;}
- ordersBox.style.display='block';
- ordersList.innerHTML=orders.map(o=>`
- <div class="order">
-  <div style="display:flex;gap:8px;align-items:center"><img src="${o.image}" style="width:44px;height:44px;border-radius:7px;object-fit:cover"><div><div style="font-weight:700">${o.name}</div><div style="font-size:12px;color:#555">Our Price ₹${o.price} <s>₹${o.mrp}</s> - ${o.date}</div></div></div>
-  <button onclick="deleteOrder(${o.id})">Delete</button>
- </div>`).join('');
-}
+function renderProducts(){grid.innerHTML=products.map((p,i)=>`<div class="card" onclick="openP(${i})"><img class="main" src="${p.images[0]}"><div class="info"><div style="font-weight:700">${p.name}</div><div><span class="price">₹${p.price}</span> <span class="mrp">₹${p.mrp}</span></div><div style="font-size:11px;color:#666">Our Price vs MRP</div></div></div>`).join('');}
+function openP(i){cur=products[i]; modal.style.display='flex'; mName.textContent=cur.name; mPrice.textContent='Our Price ₹'+cur.price; mMrp.textContent='MRP ₹'+cur.mrp; let disc=cur.mrp>cur.price?Math.round((cur.mrp-cur.price)/cur.mrp*100):0; mDisc.textContent=disc?disc+'% OFF':''; mImg.src=cur.images[0]; mThumbs.innerHTML=cur.images.map((im,j)=>`<img src="${im}" class="${j==0?'active':''}" onclick="mImg.src=this.src;document.querySelectorAll('#mThumbs img').forEach(x=>x.classList.remove('active'));this.classList.add('active')">`).join(''); let v=cur.video||'',vh=''; if(v){if(v.includes('youtu')){let id=v.split('v=')[1]?.split('&')[0]||v.split('/').pop().split('?')[0]; vh=`<iframe height="210" width="100%" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen style="border-radius:10px"></iframe>`;} else{vh=`<video controls width="100%" src="${v}" style="border-radius:10px"></video>`;}} mVideo.innerHTML=vh?'<b>Video</b>'+vh:''; }
+function placeOrder(){orders.unshift({id:Date.now(),name:cur.name,price:cur.price,mrp:cur.mrp,image:cur.images[0],date:new Date().toLocaleString()}); localStorage.setItem('umas_orders',JSON.stringify(orders)); renderOrders(); modal.style.display='none'; alert('Order Placed!');}
+function deleteOrder(id){if(confirm('Delete order?')){orders=orders.filter(o=>o.id!==id); localStorage.setItem('umas_orders',JSON.stringify(orders)); renderOrders();}}
+function renderOrders(){if(!orders.length){ordersBox.style.display='none';return;} ordersBox.style.display='block'; ordersList.innerHTML=orders.map(o=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee"><div style="display:flex;gap:8px"><img src="${o.image}" style="width:40px;height:40px;border-radius:6px;object-fit:cover"><div><div style="font-weight:700">${o.name}</div><div style="font-size:11px">Our ₹${o.price} MRP ₹${o.mrp} - ${o.date}</div></div></div><button onclick="deleteOrder(${o.id})" style="background:#222;color:#fff;border:0;padding:6px 12px;border-radius:7px">Delete</button></div>`).join('');}
 renderProducts(); renderOrders();
 </script>
-</body>
-</html>
+</body></html>
