@@ -1,24 +1,79 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Umas.India Admin NEW</title>
-<style>body{font-family:system-ui;background:#f2f2f7;margin:0;padding:16px}.card{background:#fff;border-radius:20px;padding:20px}input,select{width:100%;padding:14px;border:1px solid #ccc;border-radius:12px;margin-bottom:12px;font-size:16px;box-sizing:border-box}button.main{background:#e91e63;color:#fff;border:0;padding:16px;width:100%;border-radius:12px;font-weight:800}</style></head>
-<body><h1>Umas.India Admin (NEW)</h1>
+<style>
+body{font-family:system-ui;background:#f2f2f7;margin:0;padding:14px}
+.card{background:#fff;border-radius:18px;padding:18px;box-shadow:0 4px 10px rgba(0,0,0,.07)}
+input,select{width:100%;padding:13px;border:1px solid #ccc;border-radius:11px;margin-bottom:10px;font-size:15px;box-sizing:border-box}
+button.main{background:#e91e63;color:#fff;border:0;padding:15px;width:100%;border-radius:11px;font-weight:800;font-size:16px}
+button.edit{background:#1a73e8;color:#fff;border:0;padding:9px 12px;border-radius:8px;font-weight:700;margin-right:6px}
+button.del{background:#222;color:#fff;border:0;padding:9px 12px;border-radius:8px;font-weight:700}
+.products{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.p{background:#fff;border-radius:14px;padding:8px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.p img{width:100%;height:150px;object-fit:cover;border-radius:8px}
+</style>
+</head>
+<body>
+<h2>Umas.India Admin NEW</h2>
 <div class="card">
-<input id="name" placeholder="Name">
-<input id="price" type="number" placeholder="Price">
-<input id="mrp" type="number" placeholder="MRP">
+<input id="name" placeholder="Product Name">
+<input id="price" type="number" placeholder="Our Price - Selling Price (₹)">
+<input id="mrp" type="number" placeholder="MRP - Original Price (₹)">
 <select id="cat"><option>Sarees</option><option>Mens</option><option>Electronics</option><option>Home</option><option>Others</option></select>
-<input id="img1" placeholder="Image URL 1 - Main (required)">
-<input id="img2" placeholder="Image URL 2 - Optional">
-<input id="img3" placeholder="Image URL 3 - Optional">
-<input id="video" placeholder="Video URL - YouTube or mp4 - Optional">
-<button class="main" onclick="addProduct()">Add LIVE</button>
+<input id="img1" placeholder="Image URL 1 - Main Photo (required)">
+<input id="img2" placeholder="Image URL 2 - 2nd Photo (optional)">
+<input id="img3" placeholder="Image URL 3 - 3rd Photo (optional)">
+<input id="video" placeholder="Video URL - YouTube link or mp4 (optional)">
+<button class="main" id="mainBtn" onclick="saveProduct()">Add LIVE</button>
+<button style="width:100%;margin-top:8px;padding:12px;background:#eee;border:0;border-radius:10px;display:none" id="cancelBtn" onclick="cancelEdit()">Cancel Edit</button>
 </div>
-<h2>Products (<span id="count">0</span>)</h2><div id="list" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+
+<h3>Products (<span id="count">0</span>) - Click Edit to change price/images</h3>
+<div id="list" class="products"></div>
+
 <script>
-let products=JSON.parse(localStorage.getItem('umas_products')||'[]');
-function save(){localStorage.setItem('umas_products',JSON.stringify(products));render();}
-function addProduct(){const n=name.value.trim(),p=price.value,m=mrp.value,c=cat.value,i1=img1.value.trim(),i2=img2.value.trim(),i3=img3.value.trim(),v=video.value.trim();if(!n||!p||!i1){alert('Need Name, Price, Image1');return;}products.unshift({id:Date.now(),name:n,price:+p,mrp:m?+m:+p,cat:c,images:[i1,i2,i3].filter(Boolean),video:v});['name','price','mrp','img1','img2','img3','video'].forEach(id=>document.getElementById(id).value='');save();}
-function del(id){if(confirm('Delete?')){products=products.filter(x=>x.id!==id);save();}}
-function render(){count.textContent=products.length;list.innerHTML=products.map(pr=>`<div style="background:#fff;border-radius:16px;padding:10px"><img src="${pr.images[0]}" style="width:100%;height:160px;object-fit:cover;border-radius:10px"><div style="font-weight:700;margin-top:6px">${pr.name} ₹${pr.price}</div><button onclick="del(${pr.id})" style="width:100%;margin-top:8px;padding:10px;background:#222;color:#fff;border:0;border-radius:10px">Delete</button></div>`).join('');}render();
-</script></body></html>
+let products = JSON.parse(localStorage.getItem('umas_products') || '[]');
+let editId = null;
+
+function saveProduct(){
+ const n=name.value.trim(), p=parseInt(price.value), m=parseInt(mrp.value)||p, c=cat.value;
+ const i1=img1.value.trim(), i2=img2.value.trim(), i3=img3.value.trim(), v=video.value.trim();
+ if(!n||!p||!i1){alert('Name, Our Price, Image 1 required');return;}
+ if(editId){
+   let idx = products.findIndex(x=>x.id===editId);
+   products[idx] = {id:editId, name:n, price:p, mrp:m, cat:c, images:[i1,i2,i3].filter(Boolean), video:v};
+   editId=null; mainBtn.textContent="Add LIVE"; cancelBtn.style.display="none";
+ } else {
+   products.unshift({id:Date.now(), name:n, price:p, mrp:m, cat:c, images:[i1,i2,i3].filter(Boolean), video:v});
+ }
+ ['name','price','mrp','img1','img2','img3','video'].forEach(id=>document.getElementById(id).value='');
+ localStorage.setItem('umas_products', JSON.stringify(products));
+ render();
+}
+function editProduct(id){
+ let pr = products.find(x=>x.id===id);
+ name.value=pr.name; price.value=pr.price; mrp.value=pr.mrp; cat.value=pr.cat;
+ img1.value=pr.images[0]||''; img2.value=pr.images[1]||''; img3.value=pr.images[2]||'';
+ video.value=pr.video||''; editId=id;
+ mainBtn.textContent="Update Product"; cancelBtn.style.display="block";
+ window.scrollTo(0,0);
+}
+function cancelEdit(){editId=null; mainBtn.textContent="Add LIVE"; cancelBtn.style.display="none"; ['name','price','mrp','img1','img2','img3','video'].forEach(id=>document.getElementById(id).value='');}
+function delProduct(id){if(confirm('Delete?')){products=products.filter(x=>x.id!==id); localStorage.setItem('umas_products', JSON.stringify(products)); render();}}
+function render(){
+ count.textContent=products.length;
+ list.innerHTML=products.map(pr=>`
+ <div class="p">
+   <img src="${pr.images[0]}">
+   <div style="font-weight:700;margin-top:6px">${pr.name}</div>
+   <div style="font-size:13px">Our Price: <b>₹${pr.price}</b> <s style="color:#888">₹${pr.mrp}</s></div>
+   <div style="margin-top:6px"><button class="edit" onclick="editProduct(${pr.id})">Edit</button><button class="del" onclick="delProduct(${pr.id})">Delete</button></div>
+ </div>`).join('');
+}
+render();
+</script>
+</body>
+</html>
