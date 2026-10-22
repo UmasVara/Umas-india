@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Umas.India Admin NEW</title>
 <style>
-body{font-family:system-ui;background:#f2f2f7;margin:0;padding:14px}
-.card{background:#fff;border-radius:18px;padding:18px;box-shadow:0 4px 10px rgba(0,0,0,.07)}
+body{font-family:system-ui;background:#f2f2f7;margin:0;padding:14px}.card{background:#fff;border-radius:18px;padding:18px}
 input,select{width:100%;padding:13px;border:1px solid #ccc;border-radius:11px;margin-bottom:10px;font-size:15px;box-sizing:border-box}
-button.main{background:#e91e63;color:#fff;border:0;padding:15px;width:100%;border-radius:11px;font-weight:800;font-size:16px}
+button.main{background:#e91e63;color:#fff;border:0;padding:15px;width:100%;border-radius:11px;font-weight:800}
 button.edit{background:#1a73e8;color:#fff;border:0;padding:9px 12px;border-radius:8px;font-weight:700;margin-right:6px}
 button.del{background:#222;color:#fff;border:0;padding:9px 12px;border-radius:8px;font-weight:700}
 .products{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.p{background:#fff;border-radius:14px;padding:8px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.p{background:#fff;border-radius:14px;padding:8px}
 .p img{width:100%;height:150px;object-fit:cover;border-radius:8px}
 </style>
 </head>
@@ -29,14 +27,48 @@ button.del{background:#222;color:#fff;border:0;padding:9px 12px;border-radius:8p
 <input id="video" placeholder="Video URL - YouTube link or mp4 (optional)">
 <button class="main" id="mainBtn" onclick="saveProduct()">Add LIVE</button>
 <button style="width:100%;margin-top:8px;padding:12px;background:#eee;border:0;border-radius:10px;display:none" id="cancelBtn" onclick="cancelEdit()">Cancel Edit</button>
+<div style="margin-top:10px"><button onclick="importOld()" style="padding:10px;background:#333;color:#fff;border:0;border-radius:8px;width:100%">⬇️ Import Old 3 Products</button></div>
 </div>
-
-<h3>Products (<span id="count">0</span>) - Click Edit to change price/images</h3>
+<h3>Products (<span id="count">0</span>)</h3>
 <div id="list" class="products"></div>
-
 <script>
-let products = JSON.parse(localStorage.getItem('umas_products') || '[]');
+// FIX: Read from OLD and NEW storage both
+function loadProducts(){
+ let newData = JSON.parse(localStorage.getItem('umas_products')||'[]');
+ let old1 = JSON.parse(localStorage.getItem('products')||'[]');
+ let old2 = JSON.parse(localStorage.getItem('adminProducts')||'[]');
+ let combined = [...newData];
+ // convert old format {image: "url"} to new {images: [url]}
+ function normalize(p){
+   if(p.images) return p;
+   if(p.image) return {id:p.id||Date.now()+Math.random(), name:p.name, price:p.price, mrp:p.mrp||p.price, cat:p.cat||'Others', images:[p.image], video:''};
+   return null;
+ }
+ [...old1, ...old2].forEach(o=>{
+   let n = normalize(o);
+   if(n && !combined.find(x=>x.name===n.name)) combined.push(n);
+ });
+ return combined;
+}
+let products = loadProducts();
 let editId = null;
+
+function importOld(){
+ // Force import old 3 products if not showing
+ let old1 = JSON.parse(localStorage.getItem('products')||'[]');
+ let old2 = JSON.parse(localStorage.getItem('adminProducts')||'[]');
+ let oldAll = [...old1, ...old2];
+ if(oldAll.length===0){ alert('No old products found in old admin storage. Open old admin first once.'); return; }
+ oldAll.forEach(o=>{
+   let img = o.image||o.images?.[0]||'';
+   if(!img) return;
+   if(products.find(x=>x.name===o.name)) return;
+   products.push({id:Date.now()+Math.random(), name:o.name, price:o.price, mrp:o.mrp||o.price, cat:o.cat||'Others', images:[img], video:''});
+ });
+ localStorage.setItem('umas_products', JSON.stringify(products));
+ render();
+ alert('Imported '+oldAll.length+' old products!');
+}
 
 function saveProduct(){
  const n=name.value.trim(), p=parseInt(price.value), m=parseInt(mrp.value)||p, c=cat.value;
@@ -64,6 +96,9 @@ function editProduct(id){
 function cancelEdit(){editId=null; mainBtn.textContent="Add LIVE"; cancelBtn.style.display="none"; ['name','price','mrp','img1','img2','img3','video'].forEach(id=>document.getElementById(id).value='');}
 function delProduct(id){if(confirm('Delete?')){products=products.filter(x=>x.id!==id); localStorage.setItem('umas_products', JSON.stringify(products)); render();}}
 function render(){
+ // also save to old key so old app can see new products
+ localStorage.setItem('umas_products', JSON.stringify(products));
+ localStorage.setItem('products', JSON.stringify(products));
  count.textContent=products.length;
  list.innerHTML=products.map(pr=>`
  <div class="p">
