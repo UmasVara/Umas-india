@@ -5,748 +5,180 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Umas.India</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#e91e63">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3081/3081840.png">
-
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   <style>
-    :root{
-      --bg:#f4f4f4;
-      --card:#fff;
-      --text:#111;
-      --muted:#666;
-      --header:#e91e63;
-      --button:#e91e63;
-      --darkbg:#111;
-      --darkcard:#1a1a1a;
-      --darktext:#fff;
-      --darkmuted:#ddd;
-      --border:#eee;
-      --inputbg:#fff;
-      --inputtext:#111;
-    }
-
-    body{
-      margin:0;
-      font-family:system-ui, Arial, sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      transition:0.3s ease;
-    }
-
-    body.dark{
-      background:#0f0f0f;
-      color:var(--darktext);
-    }
-
-    .header{
-      background:var(--header);
-      color:#fff;
-      text-align:center;
-      padding:18px 12px 14px;
-      position:sticky;
-      top:0;
-      z-index:20;
-      box-shadow:0 2px 10px rgba(0,0,0,.12);
-    }
-
-    .header h1{
-      margin:0;
-      font-size:28px;
-      cursor:pointer;
-      user-select:none;
-    }
-
-    .header p{
-      margin:6px 0 0;
-      font-size:13px;
-      line-height:1.5;
-    }
-
-    .trackBtn{
-      background:#fff;
-      color:#e91e63;
-      border:none;
-      padding:8px 18px;
-      border-radius:20px;
-      font-weight:bold;
-      margin-top:10px;
-      cursor:pointer;
-    }
-
-    #secretAdminBtn{
-      display:none;
-      background:#000;
-      color:#fff;
-      border:none;
-      padding:8px 22px;
-      border-radius:20px;
-      margin-top:10px;
-      font-weight:bold;
-    }
-
-    .toolbar{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:center;
-      align-items:center;
-      padding:12px;
-      background:#fff;
-      border-bottom:1px solid var(--border);
-      position:sticky;
-      top:90px;
-      z-index:15;
-    }
-
-    body.dark .toolbar{
-      background:#1a1a1a;
-      border-color:#333;
-    }
-
-    .toolbar input, .toolbar select{
-      padding:12px 14px;
-      border:1px solid #ddd;
-      border-radius:10px;
-      font-size:15px;
-      background:var(--inputbg);
-      color:var(--inputtext);
-      outline:none;
-    }
-
-    #themeToggle{
-      padding:12px 16px;
-      border:none;
-      border-radius:10px;
-      background:#111;
-      color:#fff;
-      font-weight:bold;
-      cursor:pointer;
-    }
-
-    body.dark #themeToggle{
-      background:#fff;
-      color:#111;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      padding:12px;
-      padding-bottom:100px;
-    }
-
-    .card{
-      border-radius:12px;
-      overflow:hidden;
-      box-shadow:0 2px 10px rgba(0,0,0,.12);
-      background:var(--card);
-      border:1px solid #f0f0f0;
-    }
-
-    body.dark .card{
-      background:var(--darkcard);
-      border-color:#222;
-    }
-
-    .card img{
-      width:100%;
-      height:200px;
-      object-fit:cover;
-      cursor:pointer;
-    }
-
-    .card-body{
-      padding:10px;
-      color:var(--text);
-    }
-
-    body.dark .card-body{
-      color:var(--darktext);
-    }
-
-    .buy{
-      background:var(--button);
-      color:#fff;
-      border:none;
-      width:100%;
-      padding:10px;
-      border-radius:8px;
-      font-weight:bold;
-      margin-top:8px;
-      cursor:pointer;
-    }
-
-    .buy.secondary{
-      background:#333;
-      margin-top:8px;
-    }
-
-    #cartBtn{
-      position:fixed;
-      bottom:20px;
-      right:20px;
-      background:#e91e63;
-      color:#fff;
-      border:none;
-      padding:15px 20px;
-      border-radius:50px;
-      font-weight:bold;
-      box-shadow:0 4px 15px rgba(0,0,0,.3);
-      z-index:30;
-      cursor:pointer;
-    }
-
-    #checkoutModal,#trackModal,#productModal,#adminPanel{
-      display:none;
-      position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      background:rgba(0,0,0,.72);
-      z-index:40;
-      overflow-y:auto;
-    }
-
-    .modalBox{
-      background:#fff;
-      color:#111;
-      max-width:480px;
-      margin:24px auto;
-      padding:20px;
-      border-radius:15px;
-      box-shadow:0 10px 30px rgba(0,0,0,.2);
-    }
-
-    body.dark .modalBox{
-      background:#1d1d1d;
-      color:#fff;
-    }
-
-    .modalBox input, .modalBox textarea, .modalBox select{
-      width:92%;
-      padding:12px;
-      margin:8px 0;
-      border:1px solid #ccc;
-      border-radius:8px;
-      font-size:15px;
-      background:#fff;
-      color:#111;
-    }
-
-    body.dark .modalBox input,
-    body.dark .modalBox textarea,
-    body.dark .modalBox select{
-      background:#111;
-      color:#fff;
-      border-color:#333;
-    }
-
-    .payOption{
-      display:block;
-      padding:12px;
-      margin:8px 0;
-      border-radius:10px;
-      border:2px solid #ddd;
-      cursor:pointer;
-      color:#111;
-    }
-
-    body.dark .payOption{
-      color:#fff;
-      border-color:#444;
-      background:#222 !important;
-    }
-
-    .payOption:has(input:checked){
-      border-color:#e91e63;
-      background:#fce4ec;
-    }
-
-    .qtyBtn{
-      border:1px solid #ccc;
-      background:#fff;
-      color:#111;
-      padding:3px 8px;
-      border-radius:4px;
-      cursor:pointer;
-      font-weight:bold;
-    }
-
-    .removeBtn{
-      background:#ff1744;
-      color:#fff;
-      border:none;
-      padding:5px 8px;
-      border-radius:4px;
-      cursor:pointer;
-      font-size:12px;
-    }
-
-    .adminSection{
-      max-width:1100px;
-      margin:18px auto 80px;
-      padding:16px;
-      display:none;
-      background:#fff;
-      border-radius:16px;
-      box-shadow:0 4px 12px rgba(0,0,0,.08);
-    }
-
-    body.dark .adminSection{
-      background:#171717;
-      color:#fff;
-    }
-
-    .adminForm{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-      gap:10px;
-      margin-bottom:20px;
-    }
-
-    .adminForm input, .adminForm select{
-      padding:12px;
-      border:1px solid #ddd;
-      border-radius:10px;
-      font-size:14px;
-      width:100%;
-      box-sizing:border-box;
-    }
-
-    .adminForm button{
-      padding:12px;
-      border:none;
-      border-radius:10px;
-      background:#e91e63;
-      color:#fff;
-      font-weight:bold;
-      cursor:pointer;
-    }
-
-    .adminList{
-      display:grid;
-      gap:12px;
-    }
-
-    .adminRow{
-      border:1px solid #eee;
-      border-radius:12px;
-      padding:12px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      background:#fafafa;
-    }
-
-    body.dark .adminRow{
-      background:#1f1f1f;
-      border-color:#2a2a2a;
-    }
-
-    .statusBtn{
-      padding:8px 14px;
-      border:none;
-      border-radius:8px;
-      font-weight:bold;
-      cursor:pointer;
-    }
-
-    .hiddenProduct{
-      opacity:0.6;
-      border-style:dashed;
-    }
-
-    .paymentSettings{
-      margin-top:18px;
-      padding:16px;
-      border:1px solid #eee;
-      border-radius:12px;
-      background:#fafafa;
-    }
-
-    body.dark .paymentSettings{
-      background:#1f1f1f;
-      border-color:#2a2a2a;
-    }
-
-    .paymentToggleRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin:12px 0;
-      padding:10px 12px;
-      border-radius:8px;
-      background:#fff;
-    }
-
-    body.dark .paymentToggleRow{
-      background:#111;
-    }
-
-    .paymentToggleRow label{
-      font-weight:bold;
-    }
-
-    .paymentToggleRow input{
-      transform: scale(1.3);
-    }
-
-    @media (max-width: 700px){
-      .grid{
-        grid-template-columns:1fr;
-      }
-      .toolbar{
-        top:96px;
-      }
-    }
+    :root{--header:#e91e63;--bg:#f4f4f4}
+    body{margin:0;font-family:system-ui;background:var(--bg)}
+    .header{background:var(--header);color:#fff;text-align:center;padding:18px;position:sticky;top:0;z-index:20}
+    .header h1{margin:0;font-size:28px;cursor:pointer}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:12px;background:#fff;position:sticky;top:85px;z-index:15;border-bottom:1px solid #eee}
+    .toolbar input,.toolbar select{padding:12px;border:1px solid #ddd;border-radius:10px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px;padding-bottom:100px}
+    @media(max-width:700px){.grid{grid-template-columns:1fr}}
+    .card{border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+    .card img{width:100%;height:180px;object-fit:cover;cursor:pointer}
+    .card-body{padding:10px}
+    .buy{background:#e91e63;color:#fff;border:none;width:100%;padding:10px;border-radius:8px;font-weight:bold;margin-top:6px;cursor:pointer}
+    #cartBtn{position:fixed;bottom:20px;right:20px;background:#e91e63;color:#fff;border:none;padding:15px 20px;border-radius:50px;font-weight:bold;z-index:30}
+    #checkoutModal,#trackModal,#productModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:40;display:none;overflow-y:auto}
+    .modalBox{background:#fff;max-width:480px;margin:20px auto;padding:20px;border-radius:15px}
+    .modalBox input,.modalBox textarea,.modalBox select{width:92%;padding:12px;margin:8px 0;border:1px solid #ccc;border-radius:8px}
+    .adminSection{max-width:1100px;margin:18px auto;padding:16px;display:none;background:#fff;border-radius:16px}
+    .adminForm{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+    .adminForm input,.adminForm select{padding:12px;border:1px solid #ddd;border-radius:10px;width:100%;box-sizing:border-box}
+    .adminForm button{padding:12px;border:none;border-radius:10px;background:#e91e63;color:#fff;font-weight:bold;cursor:pointer}
+    .adminRow{border:1px solid #eee;border-radius:12px;padding:12px;display:flex;justify-content:space-between;flex-wrap:wrap;background:#fafafa;margin-top:10px}
+    .tabBtn{padding:10px 16px;border:none;border-radius:20px;font-weight:bold;cursor:pointer;margin:5px}
+    .tabActive{background:#e91e63;color:#fff}.tabOff{background:#eee}
   </style>
 </head>
 <body>
-
   <div class="header">
     <h1 id="mainTitle">Umas.India</h1>
-    <p>Owner: Umasvara | 7989333257<br>UPI: 7989333257@ybl</p>
-    <button class="trackBtn" onclick="openTrack()">📦 Track My Order</button>
-    <button id="secretAdminBtn" onclick="checkAdmin()">Admin</button>
+    <p id="upiDisplay"></p>
+    <button onclick="openTrack()" style="background:#fff;color:#e91e63;border:none;padding:8px 18px;border-radius:20px;font-weight:bold">📦 Track My Order</button>
+    <button id="secretAdminBtn" style="display:none;background:#000;color:#fff;border:none;padding:8px 18px;border-radius:20px;margin-left:8px" onclick="checkAdmin()">Admin</button>
   </div>
-
   <div class="toolbar">
-    <input id="searchInput" placeholder="Search products..." />
-    <select id="categoryFilter">
-      <option value="all">All</option>
-    </select>
-    <button id="themeToggle" onclick="toggleTheme()">🌙</button>
+    <input id="searchInput" placeholder="Search..."><select id="categoryFilter"><option value="all">All</option></select>
   </div>
-
   <div id="products" class="grid"></div>
-
   <button id="cartBtn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
 
   <div id="adminPanel" class="adminSection">
-    <h2 style="margin-top:0;">Admin Panel</h2>
-
+    <h2>Admin Panel</h2>
     <div class="adminForm">
-      <input id="adminName" placeholder="Product name">
-      <input id="adminCategory" placeholder="Category">
-      <input id="adminPrice" type="number" min="1" placeholder="Price">
-      <input id="adminMrp" type="number" min="1" placeholder="MRP">
-      <input id="adminImage" placeholder="Image URL">
-      <input id="adminDesc" placeholder="Description">
+      <input id="adminName" placeholder="Name"><input id="adminCategory" placeholder="Category">
+      <input id="adminPrice" type="number" placeholder="Price"><input id="adminMrp" type="number" placeholder="MRP">
+      <input type="file" id="adminFile" accept="image/*"><input id="adminImage" placeholder="Or Image URL">
+      <input id="adminDesc" placeholder="Desc / Variants ex: 500g-40,1kg-80">
       <button onclick="addProduct()">Add Product</button>
     </div>
-
-    <div class="paymentSettings">
-      <h3 style="margin-top:0;">Payment Options</h3>
-
-      <div class="paymentToggleRow">
-        <label for="codToggle">Cash on Delivery</label>
-        <input id="codToggle" type="checkbox" checked>
-      </div>
-
-      <div class="paymentToggleRow">
-        <label for="upiToggle">UPI</label>
-        <input id="upiToggle" type="checkbox" checked>
-      </div>
-
-      <div class="paymentToggleRow">
-        <label for="whatsappToggle">WhatsApp Order</label>
-        <input id="whatsappToggle" type="checkbox" checked>
-      </div>
-
-      <button onclick="savePaymentSettings()" style="width:100%;background:#e91e63;color:#fff;padding:12px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;">Save Payment Settings</button>
+    <div style="margin-top:18px;padding:16px;border:1px solid #eee;border-radius:12px;background:#fafafa">
+      <h3>Payment Settings - Change UPI ID & Enable/Disable</h3>
+      <input id="settingUpiId" placeholder="UPI ID ex: shop@ybl" style="width:100%;padding:12px;margin:6px 0">
+      <input id="settingWa" placeholder="WhatsApp Number ex: 917989333257" style="width:100%;padding:12px;margin:6px 0">
+      <label><input id="codToggle" type="checkbox" checked> COD</label> &nbsp;
+      <label><input id="upiToggle" type="checkbox" checked> UPI</label> &nbsp;
+      <label><input id="whatsappToggle" type="checkbox" checked> WhatsApp</label><br>
+      <input id="freeAbove" type="number" placeholder="Free delivery above ₹" style="width:48%;padding:10px;margin-top:10px">
+      <input id="delCharge" type="number" placeholder="Delivery charge ₹" style="width:48%;padding:10px;margin-top:10px"><br>
+      <button onclick="savePaymentSettings()" style="width:100%;margin-top:10px;background:#e91e63;color:#fff;padding:12px;border:none;border-radius:10px;font-weight:bold">Save Payment Settings to Firestore</button>
     </div>
-
-    <div class="adminList" id="adminList"></div>
+    <div style="margin-top:20px">
+      <button id="tabActive" class="tabBtn tabActive" onclick="switchOrderTab('active')">Active Orders</button>
+      <button id="tabDone" class="tabBtn tabOff" onclick="switchOrderTab('completed')">Completed / Cancelled</button>
+    </div>
+    <div id="adminOrders" style="margin-top:12px"></div>
+    <div id="adminList"></div>
   </div>
 
-  <div id="checkoutModal">
-    <div class="modalBox">
-      <h2 style="margin-top:0;color:#e91e63;">Checkout</h2>
-      <button onclick="closeCheckout()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X</button>
-      <div style="clear:both"></div>
+  <div id="checkoutModal"><div class="modalBox">
+    <h2>Checkout <button onclick="closeCheckout()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px">X</button></h2>
+    <div id="cartItems"></div><h3>Total: ₹<span id="totalAmt">0</span></h3>
+    <input id="custName" placeholder="Full Name *"><input id="custPhone" placeholder="Phone *"><textarea id="custAddress" placeholder="Address *"></textarea>
+    <input id="deliveryDate" type="date" style="width:92%"><select id="deliverySlot" style="width:92%"><option>Morning 9-12</option><option>Afternoon 12-4</option><option>Evening 4-8</option></select>
+    <div id="paymentOptionsContainer"></div>
+    <button onclick="placeOrder()" style="width:100%;background:#e91e63;color:#fff;padding:16px;border:none;border-radius:10px;font-weight:bold;margin-top:10px">✅ Place Order</button>
+  </div></div>
 
-      <div id="cartItems"></div>
-      <h3>Total: ₹<span id="totalAmt">0</span></h3>
+  <div id="trackModal"><div class="modalBox">
+    <h2>Track Order <button onclick="closeTrack()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px">X</button></h2>
+    <input id="trackPhone" placeholder="Enter Phone"><button onclick="trackOrders()" style="width:100%;background:#4caf50;color:#fff;padding:12px;border:none;border-radius:8px;font-weight:bold">Check</button>
+    <div id="trackResult"></div>
+  </div></div>
 
-      <input id="custName" placeholder="Your Full Name *">
-      <input id="custPhone" placeholder="Phone Number *">
-      <textarea id="custAddress" placeholder="Full Delivery Address *"></textarea>
+  <div id="productModal"><div class="modalBox">
+    <button onclick="closeProductModal()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px">X</button>
+    <img id="modalImage" style="width:100%;height:200px;object-fit:cover;border-radius:12px"><h2 id="modalName"></h2><p id="modalDesc"></p><h3 id="modalPrice"></h3>
+    <div id="modalVariants"></div>
+    <button onclick="addToCartFromModal()" style="width:100%;background:#e91e63;color:#fff;padding:12px;border:none;border-radius:10px;font-weight:bold;margin-top:8px">Add to Cart</button>
+  </div></div>
 
-      <h3>💳 Payment</h3>
-      <div id="paymentOptionsContainer"></div>
+<script>
+const firebaseConfig={apiKey:"AIzaSyA2CKqJnhdVijyCmrJPrxP21fVhIQI9LWk",authDomain:"umasindia-4cd69.firebaseapp.com",projectId:"umasindia-4cd69",storageBucket:"umasindia-4cd69.firebasestorage.app",messagingSenderId:"441625672930",appId:"1:441625672930:web:0e80f6a292950d6dbd72bb"};
+firebase.initializeApp(firebaseConfig);const db=firebase.firestore();const storage=firebase.storage();
+let products=[],cart=JSON.parse(localStorage.getItem('umas_cart')||'[]'),selectedProduct=null,searchText="",selectedCategory="all",isAdmin=false,adminTab="active";
+let paymentConfig={upiId:"",whatsappNumber:"917989333257",enableCOD:true,enableUPI:true,enableWhatsApp:true,freeDeliveryAbove:500,deliveryCharge:30};
+let tapCount=0,lastTap=0;
 
-      <button onclick="placeOrder()" style="width:100%;background:#e91e63;color:#fff;padding:16px;border:none;border-radius:10px;font-size:18px;font-weight:bold;margin-top:15px;">✅ Place My Order</button>
-    </div>
-  </div>
+// Load payment config from Firestore - FIX
+db.collection("settings").doc("payment").onSnapshot(doc=>{
+  if(doc.exists){paymentConfig={...paymentConfig,...doc.data()};}
+  document.getElementById("upiDisplay").innerText=`UPI: ${paymentConfig.upiId||"Not set"} | ${paymentConfig.whatsappNumber}`;
+  loadPaymentSettingsUI();
+});
 
-  <div id="trackModal">
-    <div class="modalBox">
-      <h2 style="color:#e91e63;margin-top:0;">📦 Track Your Orders</h2>
-      <button onclick="closeTrack()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X</button>
-      <div style="clear:both"></div>
-
-      <input id="trackPhone" placeholder="Enter Phone e.g. 90******11">
-      <button onclick="trackOrders()" style="width:100%;background:#4caf50;color:#fff;padding:12px;border:none;border-radius:8px;font-weight:bold;margin-top:8px;">🔍 Check Status</button>
-
-      <div id="trackResult" style="margin-top:15px;"></div>
-    </div>
-  </div>
-
-  <div id="productModal">
-    <div class="modalBox">
-      <button onclick="closeProductModal()" style="float:right;background:#000;color:#fff;border:none;padding:5px 10px;border-radius:5px;">X</button>
-      <div style="clear:both"></div>
-      <img id="modalImage" style="width:100%;height:220px;object-fit:cover;border-radius:12px;">
-      <h2 id="modalName" style="margin:12px 0 8px;color:#e91e63;"></h2>
-      <p id="modalDesc" style="margin:0 0 10px;"></p>
-      <h3 id="modalPrice" style="margin:0 0 10px;"></h3>
-      <button onclick="addToCartFromModal()" style="width:100%;background:#e91e63;color:#fff;padding:14px;border:none;border-radius:10px;font-weight:bold;">Add to Cart</button>
-      <button onclick="buyNowFromModal()" style="width:100%;background:#333;color:#fff;padding:14px;border:none;border-radius:10px;font-weight:bold;margin-top:8px;">Buy Now</button>
-    </div>
-  </div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA2CKqJnhdVijyCmrJPrxP21fVhIQI9LWk",
-      authDomain: "umasindia-4cd69.firebaseapp.com",
-      projectId: "umasindia-4cd69",
-      storageBucket: "umasindia-4cd69.firebasestorage.app",
-      messagingSenderId: "441625672930",
-      appId: "1:441625672930:web:0e80f6a292950d6dbd72bb"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    let products = [];
-    let cart = JSON.parse(localStorage.getItem('umas_cart') || '[]');
-    let selectedProduct = null;
-    let searchText = "";
-    let selectedCategory = "all";
-    let isAdmin = false;
-    let darkMode = localStorage.getItem("umas_dark") === "true";
-
-    const defaultPaymentOptions = {
-      cod: true,
-      upi: true,
-      whatsapp: true
-    };
-
-    let paymentOptions = JSON.parse(localStorage.getItem("umas_payment_options") || "null") || { ...defaultPaymentOptions };
-
-    function loadProducts() {
-      db.collection("products")
-        .orderBy("date", "desc")
-        .onSnapshot((snapshot) => {
-          products = [];
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            products.push({ ...data, id: doc.id });
-          });
-
-          setupCategoryFilter();
-          render();
-          renderAdminPanel();
-        });
-    }
-
-    function setupCategoryFilter() {
-      const categories = [...new Set(products.map(p => (p.category || "General").trim()).filter(Boolean))];
-      const select = document.getElementById("categoryFilter");
-      select.innerHTML = '<option value="all">All</option>';
-      categories.forEach(cat => {
-        const option = document.createElement("option");
-        option.value = cat;
-        option.textContent = cat;
-        select.appendChild(option);
-      });
-
-      if (categories.includes(selectedCategory)) {
-        select.value = selectedCategory;
-      } else {
-        selectedCategory = "all";
-        select.value = "all";
-      }
-    }
-
-    function render() {
-      const list = document.getElementById("products");
-      const filtered = products.filter((p) => {
-        const visible = p.visible !== false;
-        if (!visible && !isAdmin) return false;
-
-        const search = (searchText || "").toLowerCase();
-        const matchesSearch = !search || `${p.name || ""} ${p.category || ""}`.toLowerCase().includes(search);
-        const matchesCategory = selectedCategory === "all" || (p.category || "General") === selectedCategory;
-
-        return matchesSearch && matchesCategory;
-      });
-
-      let html = "";
-      filtered.forEach((p) => {
-        html += `
-          <div class="card ${p.visible === false ? 'hiddenProduct' : ''}">
-            <img src="${p.image || p.img || 'https://via.placeholder.com/600x400?text=Product'}" onclick="openProductModal('${p.id}')">
-            <div class="card-body">
-              <b>${p.name || "Unnamed product"}</b><br>
-              ₹${p.price || 0} <s>₹${p.mrp || ""}</s><br>
-              <small>${p.category || "General"}</small><br>
-              <div style="margin-top:8px;">${p.description || ""}</div>
-              <button class="buy" onclick="openProductModal('${p.id}')">View Details</button>
-              <button class="buy secondary" onclick="buyNow('${p.id}')">Buy Now</button>
-            </div>
-          </div>
-        `;
-      });
-
-      if (filtered.length === 0) {
-        html = `<div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:${document.body.classList.contains('dark') ? '#ddd' : '#555'};">No products found</div>`;
-      }
-
-      list.innerHTML = html;
-      updateCartCount();
-    }
-
-    function addToCart(productId) {
-      const p = products.find(item => item.id === productId);
-      if (!p) return;
-
-      let found = cart.find(item => item.name === p.name);
-      if (found) {
-        found.qty += 1;
-      } else {
-        cart.push({ name: p.name, price: p.price, qty: 1 });
-      }
-
-      localStorage.setItem("umas_cart", JSON.stringify(cart));
-      updateCartCount();
-      alert(p.name + " added to cart!");
-    }
-
-    function updateCartCount() {
-      const total = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
-      document.getElementById("cartCount").innerText = total;
-    }
-
-    function openCheckout() {
-      if (cart.length === 0) {
-        alert("Cart is empty");
-        return;
-      }
-
-      renderCheckoutItems();
-      renderPaymentOptions();
-      document.getElementById("checkoutModal").style.display = "block";
-    }
-
-    function closeCheckout() {
-      document.getElementById("checkoutModal").style.display = "none";
-    }
-
-    function renderCheckoutItems() {
-      let html = "";
-      let total = 0;
-
-      cart.forEach((c, idx) => {
-        const itemTotal = Number(c.price || 0) * Number(c.qty || 1);
-        total += itemTotal;
-
-        html += `
-          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;">
-            <div>
-              <b>${c.name}</b><br>
-              <button class="qtyBtn" onclick="changeQty(${idx}, -1)">-</button>
-              ${c.qty}
-              <button class="qtyBtn" onclick="changeQty(${idx}, 1)">+</button>
-              ₹${itemTotal}
-            </div>
-            <button class="removeBtn" onclick="removeItem(${idx})">Remove</button>
-          </div>
-        `;
-      });
-
-      document.getElementById("cartItems").innerHTML = html;
-      document.getElementById("totalAmt").innerText = total;
-    }
-
-    function changeQty(i, d) {
-      cart[i].qty += d;
-      if (cart[i].qty <= 0) {
-        cart.splice(i, 1);
-      }
-      saveCart();
-    }
-
-    function removeItem(i) {
-      cart.splice(i, 1);
-      saveCart();
-    }
-
-    function saveCart() {
-      localStorage.setItem("umas_cart", JSON.stringify(cart));
-      if (cart.length === 0) {
-        closeCheckout();
-        render();
-        return;
-      }
-      renderCheckoutItems();
-      updateCartCount();
-    }
-
-    function openTrack() {
-      document.getElementById("trackModal").style.display = "block";
-    }
-
-    function closeTrack() {
-      document.getElementById("trackModal").style.display = "none";
-    }
-
-    function openProductModal(productId) {
-      const p = products.find(item => item.id === productId);
-      if (!p) return;
-      selectedProduct = p;
-
-      document.getElementById("modalImage").src = p.image || p.img || "https://via.placeholder.com/600x400?text=Product";
-      document.getElementById("modalName").innerText = p.name;
-      document.getElementById("modalDesc").innerText = p.description || "Premium product";
-      document.getElementById("modalPrice").innerText = "₹" + (p.price || 0);
-
-      document.getElementById("productModal").style.display = "block";
-    }
-
-    function closeProductModal() {
-      document.getElementById("productModal").style.display = "none";
-    }
-
-    function addToCartFromModal() {
-      if (!selectedProduct) return;
-      addToCart(selectedProduct.id);
-      closeProductModal();
-    }
-
-    function buyNow(productId) {
-      const p = products.find(item => item.id === productId);
-      if (!p) return;
-      cart = [{ name: p.name, price: p.price, qty: 1 }];
-      localStorage.setItem("umas_cart", JSON.stringify(cart));
-      updateCartCount();
-      openCheckout();
-    }
-
-    function buyNowFromModal() {
-      if (!selectedProduct) return;
-      buyNow(selectedProduct.id);
-      closeProductModal();
-    }
-
-    function renderPaymentOptions() {
-      const container = document.getElementById("paymentOptionsContainer");
-      const en
+function loadProducts(){
+  db.collection("products").orderBy("date","desc").onSnapshot(s=>{
+    products=[];s.forEach(d=>products.push({...d.data(),id:d.id}));setupCategoryFilter();render();renderAdminPanel();
+  },err=>{console.error(err); db.collection("products").onSnapshot(s=>{products=[];s.forEach(d=>products.push({...d.data(),id:d.id}));setupCategoryFilter();render();})});
+}
+function setupCategoryFilter(){
+  const cats=[...new Set(products.map(p=>p.category||"General"))];const sel=document.getElementById("categoryFilter");
+  const cur=sel.value;sel.innerHTML='<option value="all">All</option>';cats.forEach(c=>{let o=document.createElement("option");o.value=c;o.textContent=c;sel.appendChild(o);});if(cats.includes(cur))sel.value=cur;
+}
+function render(){
+  const list=document.getElementById("products");const filtered=products.filter(p=>{
+    if(p.visible===false&&!isAdmin)return false;const s=searchText.toLowerCase();return (!s||`${p.name} ${p.category}`.toLowerCase().includes(s))&&(selectedCategory==="all"||p.category===selectedCategory);
+  });
+  list.innerHTML=filtered.map(p=>`<div class="card"><img src="${p.image||'https://via.placeholder.com/300'}" onclick="openProductModal('${p.id}')"><div class="card-body"><b>${p.name}</b><br>₹${p.price} <small>${p.category}</small><br><button class="buy" onclick="openProductModal('${p.id}')">View</button></div></div>`).join('')||'<p style="text-align:center;width:100%">No products</p>';
+  updateCartCount();
+}
+function updateCartCount(){document.getElementById("cartCount").innerText=cart.reduce((s,i)=>s+Number(i.qty||0),0);}
+function saveCart(){localStorage.setItem('umas_cart',JSON.stringify(cart));updateCartCount();renderCheckoutItems();}
+function openProductModal(id){const p=products.find(x=>x.id===id);if(!p)return;selectedProduct=p;document.getElementById("modalImage").src=p.image;document.getElementById("modalName").innerText=p.name;document.getElementById("modalDesc").innerText=p.description||"";document.getElementById("modalPrice").innerText="₹"+p.price;
+  let vHtml="";if(p.variants&&p.variants.length){vHtml=p.variants.map(v=>`<button onclick="selectedProduct.selectedVariant=${JSON.stringify(v).replace(/"/g,'&quot;')};document.getElementById('modalPrice').innerText='₹'+${v.price}" style="margin:3px;padding:6px 10px;border:1px solid #ddd;border-radius:15px">${v.label} ₹${v.price}</button>`).join('');}
+  document.getElementById("modalVariants").innerHTML=vHtml;document.getElementById("productModal").style.display="block";
+}
+function closeProductModal(){document.getElementById("productModal").style.display="none";}
+function addToCartFromModal(){if(!selectedProduct)return;let price=selectedProduct.price;if(selectedProduct.selectedVariant)try{price=JSON.parse(selectedProduct.selectedVariant).price||price}catch(e){}let f=cart.find(i=>i.id===selectedProduct.id&&i.price===price);if(f)f.qty++;else cart.push({id:selectedProduct.id,name:selectedProduct.name,price:price,qty:1});saveCart();alert("Added");closeProductModal();}
+function openCheckout(){if(!cart.length)return alert("Empty");renderCheckoutItems();renderPaymentOptions();document.getElementById("checkoutModal").style.display="block";}
+function closeCheckout(){document.getElementById("checkoutModal").style.display="none";}
+function renderCheckoutItems(){let h="",t=0;cart.forEach((c,i)=>{t+=c.price*c.qty;h+=`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:8px 0"><div>${c.name} ₹${c.price} <button onclick="cart[${i}].qty--;if(cart[${i}].qty<=0)cart.splice(${i},1);saveCart()" style="padding:2px 6px">-</button> ${c.qty} <button onclick="cart[${i}].qty++;saveCart()" style="padding:2px 6px">+</button></div><button onclick="cart.splice(${i},1);saveCart()" style="background:red;color:#fff;border:none;padding:3px 8px;border-radius:4px">X</button></div>`});if(cart.length===0){closeCheckout();render();return;}document.getElementById("cartItems").innerHTML=h;let del=0;if(t<paymentConfig.freeDeliveryAbove)del=paymentConfig.deliveryCharge;document.getElementById("totalAmt").innerText=t+del;}
+function renderPaymentOptions(){const c=document.getElementById("paymentOptionsContainer");let enabled=[];if(paymentConfig.enableCOD)enabled.push("COD");if(paymentConfig.enableUPI)enabled.push("UPI");if(paymentConfig.enableWhatsApp)enabled.push("WhatsApp");if(!enabled.length){c.innerHTML="<p style='color:red'>No payment enabled in admin</p>";return;}c.innerHTML=enabled.map((k,i)=>`<label style="display:block;padding:10px;border:2px solid #ddd;border-radius:10px;margin:6px 0"><input type="radio" name="pay" value="${k}" ${i===0?'checked':''}> ${k} ${k==='UPI'?' - '+paymentConfig.upiId:''}</label>`).join('');}
+function placeOrder(){
+  const pay=document.querySelector('input[name="pay"]:checked')?.value;if(!pay)return alert("Select payment");
+  const name=document.getElementById("custName").value.trim(),phone=document.getElementById("custPhone").value.trim(),addr=document.getElementById("custAddress").value.trim();
+  if(!name||!phone||!addr)return alert("Fill details");
+  let total=cart.reduce((s,i)=>s+i.price*i.qty,0);if(total<paymentConfig.freeDeliveryAbove)total+=paymentConfig.deliveryCharge;
+  const slot=document.getElementById("deliverySlot").value, date=document.getElementById("deliveryDate").value;
+  const order={items:cart,total,method:pay,customer:{name,phone,address:addr},deliverySlot:slot,deliveryDate:date,status:"Pending",date:firebase.firestore.FieldValue.serverTimestamp(),localDate:new Date().toLocaleString()};
+  db.collection("orders").add(order).then(()=>{
+    if(pay==="WhatsApp"){let msg=`New Order ${name} ${phone} ${cart.map(i=>i.name+' x'+i.qty).join(', ')} Total ₹${total}`;window.open(`https://wa.me/${paymentConfig.whatsappNumber}?text=${encodeURIComponent(msg)}`,'_blank');}
+    alert("Order Placed");cart=[];saveCart();closeCheckout();
+  });
+}
+function openTrack(){document.getElementById("trackModal").style.display="block";}
+function closeTrack(){document.getElementById("trackModal").style.display="none";}
+function trackOrders(){const ph=document.getElementById("trackPhone").value.trim();db.collection("orders").where("customer.phone","==",ph).get().then(s=>{let h="";s.forEach(d=>{const o=d.data();h+=`<div style="background:#fff;padding:12px;border-radius:10px;margin:10px 0;border-left:4px solid #e91e63"><b>${o.items.map(i=>i.name+' x'+i.qty).join(', ')}</b><br>₹${o.total} - ${o.status}<br>${o.localDate||""}</div>`});document.getElementById("trackResult").innerHTML=h||"No orders";});}
+function toggleTheme(){}
+document.getElementById("searchInput").addEventListener("input",e=>{searchText=e.target.value;render();});
+document.getElementById("categoryFilter").addEventListener("change",e=>{selectedCategory=e.target.value;render();});
+document.getElementById("mainTitle").addEventListener("click",()=>{
+  const now=Date.now();if(now-lastTap>1500)tapCount=0;tapCount++;lastTap=now;
+  if(tapCount>=3){document.getElementById("secretAdminBtn").style.display="inline-block";setTimeout(()=>document.getElementById("secretAdminBtn").style.display="none",10000);tapCount=0;}
+});
+function checkAdmin(){const p=prompt("Password");if(p==="Business@1008"){isAdmin=true;document.getElementById("adminPanel").style.display="block";loadOrders();renderAdminPanel();}}
+async function addProduct(){
+  const name=document.getElementById("adminName").value.trim(),cat=document.getElementById("adminCategory").value.trim(),price=Number(document.getElementById("adminPrice").value),mrp=Number(document.getElementById("adminMrp").value),desc=document.getElementById("adminDesc").value.trim();
+  let imageUrl=document.getElementById("adminImage").value.trim();const file=document.getElementById("adminFile").files[0];
+  if(!name||!cat||!price)return alert("Fill name cat price");
+  if(file){const ref=storage.ref().child("products/"+Date.now()+"_"+file.name);await ref.put(file);imageUrl=await ref.getDownloadURL();}
+  let variants=[];if(desc.includes("-")){desc.split(',').forEach(v=>{const parts=v.split('-');if(parts.length>=2){const label=parts[0].trim();const pr=Number(parts[1].trim());if(label&&pr)variants.push({label,price:pr});}});}
+  db.collection("products").add({name,category:cat,price,mrp,image:imageUrl,description:desc,variants,visible:true,date:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>alert("Added"));
+}
+function renderAdminPanel(){if(!isAdmin)return;document.getElementById("adminList").innerHTML=products.map(p=>`<div class="adminRow"><div><b>${p.name}</b> ₹${p.price}</div><div><button onclick="db.collection('products').doc('${p.id}').update({visible:${p.visible===false}})">Hide/Show</button> <button onclick="if(confirm('Delete?'))db.collection('products').doc('${p.id}').delete()">Delete</button></div></div>`).join('');}
+function savePaymentSettings(){
+  const data={upiId:document.getElementById("settingUpiId").value.trim(),whatsappNumber:document.getElementById("settingWa").value.trim(),enableCOD:document.getElementById("codToggle").checked,enableUPI:document.getElementById("upiToggle").checked,enableWhatsApp:document.getElementById("whatsappToggle").checked,freeDeliveryAbove:Number(document.getElementById("freeAbove").value||500),deliveryCharge:Number(document.getElementById("delCharge").value||30)};
+  db.collection("settings").doc("payment").set(data,{merge:true}).then(()=>alert("Payment settings saved to Firestore - all buyers will see new settings"));
+}
+function loadPaymentSettingsUI(){document.getElementById("settingUpiId").value=paymentConfig.upiId||"";document.getElementById("settingWa").value=paymentConfig.whatsappNumber||"";document.getElementById("codToggle").checked=!!paymentConfig.enableCOD;document.getElementById("upiToggle").checked=!!paymentConfig.enableUPI;document.getElementById("whatsappToggle").checked=!!paymentConfig.enableWhatsApp;document.getElementById("freeAbove").value=paymentConfig.freeDeliveryAbove;document.getElementById("delCharge").value=paymentConfig.deliveryCharge;}
+function switchOrderTab(tab){adminTab=tab;document.getElementById("tabActive").className=tab==="active"?"tabBtn tabActive":"tabBtn tabOff";document.getElementById("tabDone").className=tab==="completed"?"tabBtn tabActive":"tabBtn tabOff";loadOrders();}
+function loadOrders(){
+  db.collection("orders").orderBy("date","desc").onSnapshot(s=>{
+    let activeHtml="",doneHtml="";
+    s.forEach(d=>{const o=d.data();const id=d.id;const items=o.items?o.items.map(i=>i.name+' x'+i.qty).join(', '):"";const card=`<div style="background:#fff;padding:12px;border-radius:10px;margin:8px 0;border-left:4px solid ${o.status==='Delivered'?'green':'#e91e63'}"><b>${items}</b><br>₹${o.total} - ${o.customer?.name} ${o.customer?.phone}<br>Status: ${o.status} | ${o.method} | ${o.deliverySlot||""}<br><select onchange="db.collection('orders').doc('${id}').update({status:this.value})"><option ${o.status==='Pending'?'selected':''}>Pending</option><option ${o.status==='Packed'?'selected':''}>Packed</option><option ${o.status==='Shipped'?'selected':''}>Shipped</option><option ${o.status==='Delivered'?'selected':''}>Delivered</option><option ${o.status==='Cancelled'?'selected':''}>Cancelled</option></select> <small>${o.localDate||""}</small></div>`;
+      if(o.status==="Delivered"||o.status==="Cancelled
